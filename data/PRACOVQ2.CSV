@@ -1,0 +1,87 @@
+Jmeno30,RodCislo,Kat,Kod,VstupDoZam,UkonceniZam,TypDuch,DuchOd
+'Krampera Viktor','630218/1886','HPP','Sklad','01.01.05',,'',
+'Veselá Jana','826126/1921','HPP','Admin','01.01.05',,'',
+'Pape Miroslav','650429/1640','HPP','Sklad','11.05.05',,'',
+'Fiala Petr','700601/1914','HPP','Jedna','01.08.12',,'',
+'Cenefels Jan','720808/2112','HPP','Admin','01.02.12',,'',
+'Fialová Dagmar','705114/2065','HPP','Jedna','01.08.12',,'',
+'Homolková Lenka','656004/0377','DPP','KÚ','01.05.16',,'',
+'Fiala Pavel','940128/1956','HPP','Admin','01.09.16',,'',
+'Sochna Miroslav','621029/1197','INV','KÚ','20.03.18',,'8 - invalidní 1.nebo','08.02.17'
+'Thielová Marcela','605628/1836','HPP','ÚP So','01.04.18',,'',
+'Fialová Nikol','985307/1954','DPP','Admin','02.04.18',,'',
+'Fiala Stanislav','361209/952','DPP','Admin','01.07.18',,'',
+'Raulichová Zdeòka','576215/1439','DPP','ÚP Ch','01.04.19',,'',
+'Bobok Vilém','710812/1900','INV','Sklad','03.12.18',,'2 - invalidní 3.stup','23.11.05'
+'Fialová Jaromíra','415705/049','DPP','Admin','01.11.18',,'',
+'Cenefelsová Miroslava','405122/020','DPP','Admin','01.11.18',,'',
+'Køimská Františka','526228/178','DPP','Admin','01.10.19',,'',
+'Kuzniková Andrea','945914/2363','DPP','Admin','01.10.19',,'',
+'Køimská Daniela','945408/1967','DPP','Admin','01.10.19',,'',
+'Køimská Bohumila','875320/2018','DPP','Admin','01.10.19',,'',
+'Kratochvíl Michal','040218/6950','U','','16.09.20',,'',
+'Pøenosil Patrik','041129/3883','U','','16.09.20',,'',
+'Bìhùnková Jindøiška','785211/2235','INV','ÚP So','17.08.21',,'8 - invalidní 1.nebo','31.12.17'
+'Boháèová Libuše','695728/2024','INV','KÚ Ch','17.08.21',,'8 - invalidní 1.nebo','01.03.18'
+'Havlíèková Alena','696007/2229','INV','ÚP So','17.08.21',,'2 - invalidní 3.stup','01.03.01'
+'Klièková Milena','745803/1823','HPP','KÚ Ch','17.08.21',,'8 - invalidní 1.nebo','24.01.19'
+'Javorèek Kortanová Jana','725425/1807','INV','ÚP So','17.08.21',,'8 - invalidní 1.nebo','17.09.12'
+'Kuchariková Ivana','615910/1344','INV','ÚP So','17.08.21',,'8 - invalidní 1.nebo','02.10.19'
+'Nováèek Petr','620508/2180','INV','ÚP So','17.08.21',,'8 - invalidní 1.nebo','12.08.14'
+'Rùièková Rùena','656210/0116','INV','KÚ','17.08.21','30.09.22','invalidní 3.stupnì','17.01.86'
+'Šufrinková Monika','635509/2557','INV','ÚP So','17.08.21',,'8 - invalidní 1.nebo','14.05.14'
+'Toráè František','810710/1805','INV','ÚP So','17.08.21',,'2 - invalidní 3.stup','12.09.06'
+'Tvrdá Nikola','805912/2225','INV','ÚP So','17.08.21','31.10.22','8 - invalidní 1.nebo','17.04.13'
+'Ullmann Robert','640803/1080','INV','ÚP So','17.08.21',,'8 - invalidní 1.nebo','08.02.98'
+'Klos Miroslav','620629/0827','INV','Dílna','17.08.21',,'8 - invalidní 1.nebo','12.11.18'
+'Seibl Martin','770306/1806','INV','Dílna','19.08.21',,'2 - invalidní 3.stup','17.01.03'
+'Baušová Radka','656001/0556','INV','KÚ','17.08.21',,'8 - invalidní 1.nebo','19.07.17'
+'Karvai Karel','620424/0515','INV','KÚ','17.08.21',,'8 - invalidní 1.nebo','10.05.05'
+'Vojtìchová Eva','635705/1877','HPP','KÚ','17.08.21',,'2 - invalidní 3.stup','19.09.13'
+'Arvensisová Radka','665425/0988','INV','Prode','17.08.21',,'8 - invalidní 1.nebo','22.11.18'
+'Beèváø Jiøí','690814/1911','INV','Dílna','17.08.21',,'8 - invalidní 1.nebo','03.07.06'
+'Boèková Dana','645601/2046','INV','Dílna','17.08.21',,'8 - invalidní 1.nebo','10.10.17'
+'Diviak Miroslav','650220/7151','INV','Dílna','17.08.21',,'2 - invalidní 3.stup','09.02.22'
+'Dvoøák Josef','831118/1912','INV','Dílna','17.08.21',,'8 - invalidní 1.nebo','28.01.10'
+'Fišer Tomáš','901206/1982','INV','Sklad','17.08.21',,'8 - invalidní 1.nebo','01.11.13'
+'Gabalec Pavel','780112/1944','HPP','Sklad','17.08.21','29.11.22','2 - invalidní 3.stup','18.10.17'
+'Helešicová Jitka','695612/2261','INV','Prode','17.08.21',,'8 - invalidní 1.nebo','04.04.12'
+'Herink Milan','770220/1892','INV','Sklad','17.08.21',,'8 - invalidní 1.nebo','13.03.17'
+'Hlavatı Jaroslav','730404/1976','INV','KÚ','17.08.21',,'8 - invalidní 1.nebo','27.10.08'
+'Hrubı Dezider','701005/2456','INV','Sklad','17.08.21',,'2 - invalidní 3.stup','04.06.14'
+'Jantošová Monika','955608/1942','INV','Admin','17.08.21',,'8 - invalidní 1.nebo','18.02.14'
+'Krauzová Jarmila','705514/2061','INV','Dílna','17.08.21',,'2 - invalidní 3.stup','14.05.88'
+'Peclinovská Eva','646029/0111','INV','Dílna','17.08.21',,'8 - invalidní 1.nebo','12.02.09'
+'Prùchová Iva','635926/1975','INV','Dílna','17.08.21',,'8 - invalidní 1.nebo','11.03.09'
+'Ruthová Michaela','855605/2043','INV','Admin','17.08.21',,'2 - invalidní 3.stup','01.01.17'
+'Ruthová Taána','655118/1395','INV','Admin','17.08.21',,'2 - invalidní 3.stup','01.10.10'
+'Salva Rudolf','791101/2285','INV','Dílna','17.08.21',,'2 - invalidní 3.stup','29.09.05'
+'Schneiderová Martina','725426/0827','INV','Dílna','17.08.21',,'2 - invalidní 3.stup','19.11.07'
+'Taiš Miroslav','670628/1648','INV','Dílna','17.08.21',,'2 - invalidní 3.stup','01.06.85'
+'Vanìk Tomáš','890321/1955','INV','Sklad','17.08.21',,'8 - invalidní 1.nebo','21.10.08'
+'Køimskı František','740321/1904','INV','Admin','17.08.21',,'2 - invalidní 3.stup','03.02.12'
+'Kuznik František','901230/3289','INV','Admin','17.08.21',,'8 - invalidní 1.nebo','23.11.11'
+'Otradovcová Dagmar','676011/1446','INV','Admin','17.08.21',,'8 - invalidní 1.nebo','30.09.05'
+'Hájková Monika','845607/5804','VPP','Admin','17.08.21',,'',
+'Pacelt Jakub','040509/1775','U','','01.09.21',,'',
+'Dbalı Petr','711212/1918','INV','Sklad','01.09.21',,'8 - invalidní 1.nebo','18.11.14'
+'Valuš Josef','051125/1015','U','','15.09.21',,'',
+'Køivánek Daniel','051007/4356','U','','15.09.21',,'',
+'Sacherová Veronika','785213/1892','INV','KÚ','24.09.21',,'2 - invalidní 3.stup','11.05.16'
+'Èerná Vìra','626020/1739','INV','ÚP So','01.10.21','30.09.22','8 - invalidní 1.nebo','06.09.11'
+'Hippmann Antonín','570406/0912','DPP','Admin','01.10.21','30.09.22','',
+'Uhırková Martina','716004/2241','INV','ÚP So','01.12.21','01.07.22','8 - invalidní 1.nebo','18.06.21'
+'Schuster Irena','745717/2228','HPP','ÚP So','01.12.21',,'8 - invalidní 1.nebo','11.02.20'
+'Otradovec Tomáš','910507/1943','DPP','Sklad','01.11.21',,'',
+'Kraus Karel','041019/5808','U','','05.01.22',,'',
+'Pancová Monika','735815/1955','HPP','Dílna','03.01.22','14.09.22','8 - invalidní 1.nebo','18.06.20'
+'Mrázek Karel','810826/2228','INV','ÚP Ch','09.03.22',,'2 - invalidní 3.stup','22.10.21'
+'Valèáková Eva','785402/1890','INV','ÚP So','23.05.22',,'2 - invalidní 3.stup','06.05.97'
+'Paulus Bohuslav','730802/1908','INV','Sklad','21.06.22',,'8 - invalidní 1.nebo','01.08.03'
+'Majer Jiøí','610320/0620','INV','ÚP So','20.06.22',,'2 - invalidní 3.stup','20.05.95'
+'Tlamichová Lenka','785213/1903','INV','KÚ','13.07.22','31.08.22','8 - invalidní 1.nebo','15.02.16'
+'Suchár Stanislav','621030/6542','INV','Dílna','22.08.22',,'8 - invalidní 1.nebo','24.10.12'
+'Melichar Petr','610503/2087','INV','Dílna','20.09.22',,'8 - invalidní 1.nebo','26.11.20'
+'Tuhı Jaroslav','640509/1561','INV','ÚP So','07.09.22',,'8 - invalidní 1.nebo','27.11.18'
+'Šimeèková Anna','025530/2091','INV','ÚP So','26.09.22',,'8 - invalidní 1.nebo','18.11.21'
+'Mráziková Simona','805129/2238','INV','KÚ ÚP','26.09.22',,'8 - invalidní 1.nebo','11.10.12'
