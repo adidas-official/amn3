@@ -29,3 +29,30 @@ def get_ins_code(code):
         if code in data:
             return data[code]
 
+
+def from_df_to_dict(df, filt=False):
+    """Passes the dataframe to dictionary for later parsing."""
+    people = {}
+    # filt = ("df['Kat'].str.contains('U')")
+    if filt:
+        filtered = (~df['Kat'].str.contains('U'))
+        df = df[filtered]
+
+    # Convert dataframe to dictionary in form like this:
+    # {idnum: {'name': str, ... ,'date: {list of dates with payments}}, idnum2: {...}, }
+    for _, row in df.iterrows():
+        people.setdefault(row['RodCislo'], {
+            'Name': row['JmenoS'],
+            'Code': row['Kod'],
+            'Cat': row['Kat'],
+            'InsCode': get_ins_code(row['CisPoj']),
+            'Date': {},
+            'StartEmployment': row['VstupDoZam'],
+            'EndEmployment': row['UkonceniZam'],
+            'PensionType': row['PensionType'],
+            'PensionStart': row['DuchOd']
+        })
+        people[row['RodCislo']]['Date'].setdefault(row['RokMes'], {
+            'Fare': int(row['Fare']), 'Payout': int(row['Payout'])
+        })
+    return people
