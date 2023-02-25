@@ -1,5 +1,18 @@
 import csv
 
+mapping = [
+    {
+        0: 'J',
+        1: 'O',
+        2: 'T'
+    },
+    {
+        0: 'I',
+        1: 'J',
+        2: 'K'
+    }
+]
+
 
 def clean(text) -> str:
     if type(text) == str:

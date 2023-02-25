@@ -32,11 +32,10 @@ class Vanguard:
         # Dictionary with employees data from exported CSVs merged into single object.
         merged = from_df_to_dict(self.dataframe, True)
         x = XScout('tables/jmenny_seznam_2022_09_27 Fiala.xlsx')
-        print(x.range)
 
         employee_list = x.employee_list()
 
-        return employee_list, merged
+        return employee_list, merged, x.range
 
 
 class XScout:
@@ -82,40 +81,4 @@ class XScout:
         return s
 
 
-# This bellow will go to Enforcer
-d = Vanguard(file_mzdy='data/Q2.CSV', file_pracov='data/PRACOVQ2.CSV')
-emps, allofthem = d.loader
-
-
-def to_list_2(idnum, items, row_num):
-    message = f'{idnum} {items["Name"]} goes to sheet2 on row #{row_num}. Payout for month {items["Date"]}'
-    print(message)
-
-
-def to_list_3(idnum, items, row_num):
-    message = f'{idnum} {items["Name"]} goes to sheet3 row #{row_num}. Payout for month {items["Date"]}'
-    print(message)
-
-
-def new_person(idnum, items):
-    message = f'{idnum} {items["Name"]} is new and will be placed to list'
-    pen_t = items["PensionType"]
-    if pen_t:
-        message += ' 2'
-    else:
-        message += ' 3'
-
-
-for a, data in allofthem.items():
-    if a in emps[0]:
-        to_list_2(a, data, emps[0][a])
-    elif a in emps[1]:
-        to_list_3(a, data, emps[1][a])
-    else:
-        message = f'{a} {data["Name"]} is new and '
-        if data['PensionType'] != '':
-            message += 'belongs to list2'
-        else:
-            message += 'belongs to list3'
-        print(message)
 
