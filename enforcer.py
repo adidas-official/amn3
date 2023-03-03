@@ -26,30 +26,39 @@ def new_person(idnum, items):
 
 class Enforcer:
     def __init__(self, dataset):
-        self.dataset = dataset[0:2]
+        self.data_up = dataset[0][0]
+        self.data_lo = dataset[0][1]
+        self.merged_up = dataset[1][0]
+        self.merged_lo = dataset[1][1]
         self.last_row = [row[1] + 1 for row in dataset[-1]]
 
     def display_data(self):
-        emps, allofthem = self.dataset
-        for a, data in allofthem.items():
-            if a in emps[0]:
-                to_list(a, data, emps[0][a], 2)
-            elif a in emps[1]:
-                to_list(a, data, emps[1][a], 3)
+        for person, data in self.merged_up.items():
+            if person in self.data_up[0]:
+                to_list(person, data, self.data_up[0][person], 2)
+            elif person in self.data_up[1]:
+                to_list(person, data, self.data_up[1][person], 3)
             else:
-                print(f'{a} {data["Name"]} is new')
+                print(f'{person} {data["Name"]} is new')
                 if data['PensionType'] != '':
-                    to_list(a, data, self.last_row[0], 2)
+                    to_list(person, data, self.last_row[0], 2)
                     self.last_row[0] += 1
                     # message += 'belongs to list2'
                 else:
-                    to_list(a, data, self.last_row[1], 3)
+                    to_list(person, data, self.last_row[1], 3)
                     self.last_row[1] += 1
                     # message += 'belongs to list3'
                 # print(message)
 
+    def display_lo(self):
+        for person, data in self.merged_lo.items():
+            for i, sheet_data in enumerate(self.data_lo):
+                if person in sheet_data:
+                    print(i, data)
+
 
 vanguard = Vanguard(file_mzdy='data/Q2.CSV', file_pracov='data/PRACOVQ2.CSV')
 enforcer = Enforcer(vanguard.loader)
-enforcer.display_data()
+# enforcer.display_data()
+enforcer.display_lo()
 

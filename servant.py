@@ -1,4 +1,8 @@
 import csv
+from io import BytesIO
+
+import msoffcrypto
+import openpyxl
 
 mapping = [
     {
@@ -12,6 +16,19 @@ mapping = [
         2: 'K'
     }
 ]
+
+
+def unlock(f, pwd):
+    try:
+        decrypted_wb = BytesIO()
+        with open(f, 'rb') as f:
+            office_file = msoffcrypto.OfficeFile(f)
+            office_file.load_key(password=pwd)
+            office_file.decrypt(decrypted_wb)
+
+        return openpyxl.load_workbook(filename=decrypted_wb)
+    except (UnboundLocalError, msoffcrypto.exceptions.FileFormatError):
+        return openpyxl.load_workbook(f)
 
 
 def clean(text) -> str:
@@ -43,10 +60,9 @@ def get_ins_code(code):
             return data[code]
 
 
-def from_df_to_dict(df, filt=False):
+def from_df_to_dict(df, filt=False, pk='RodCislo'):
     """Passes the dataframe to dictionary for later parsing."""
     people = {}
-    # filt = ("df['Kat'].str.contains('U')")
     if filt:
         filtered = (~df['Kat'].str.contains('U'))
         df = df[filtered]
@@ -54,7 +70,7 @@ def from_df_to_dict(df, filt=False):
     # Convert dataframe to dictionary in form like this:
     # {idnum: {'name': str, ... ,'date: {list of dates with payments}}, idnum2: {...}, }
     for _, row in df.iterrows():
-        people.setdefault(row['RodCislo'], {
+        people.setdefault(row[pk], {
             'Name': row['JmenoS'],
             'Code': row['Kod'],
             'Cat': row['Kat'],
@@ -65,7 +81,7 @@ def from_df_to_dict(df, filt=False):
             'PensionType': row['PensionType'],
             'PensionStart': row['DuchOd']
         })
-        people[row['RodCislo']]['Date'].setdefault(row['RokMes'], {
+        people[row[pk]]['Date'].setdefault(row['RokMes'], {
             'Fare': int(row['Fare']), 'Payout': int(row['Payout'])
         })
     return people

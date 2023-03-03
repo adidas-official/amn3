@@ -1,5 +1,8 @@
+from io import BytesIO
+
+import msoffcrypto
 import pandas as pd
-from servant import clean, get_month, get_pension_type, from_df_to_dict
+import servant
 import openpyxl
 import openpyxl.utils
 
@@ -13,13 +16,13 @@ class Vanguard:
     @property
     def prep_df(self):
         """ Preparation of data to dictionary. Uses pandas library to open, sort and merge data from csvs."""
-        mzdy = pd.read_csv(self.mzdy, encoding='cp1250').applymap(clean)
+        mzdy = pd.read_csv(self.mzdy, encoding='cp1250').applymap(servant.clean)
         mzdy['Fare'] = mzdy[['Davky1', 'Davky2']].sum(axis=1, skipna=True)
         mzdy['Payout'] = mzdy[['Zamest', 'HrubaMzda', 'iNemoc']].sum(axis=1, skipna=True)
-        mzdy['RokMes'] = mzdy['RokMes'].map(get_month)
+        mzdy['RokMes'] = mzdy['RokMes'].map(servant.get_month)
 
-        pracov = pd.read_csv(self.pracov, encoding='cp1250').applymap(clean)
-        pracov['PensionType'] = pracov['TypDuch'].map(get_pension_type)
+        pracov = pd.read_csv(self.pracov, encoding='cp1250').applymap(servant.clean)
+        pracov['PensionType'] = pracov['TypDuch'].map(servant.get_pension_type)
 
         data = pd.merge(mzdy, pracov, on='RodCislo', suffixes=('', '_y'))
         data = data.drop(['Kat_y', 'Kod_y', 'Jmeno30', 'Davky1', 'Davky2', 'Zamest', 'HrubaMzda', 'iNemoc'], axis=1)
@@ -30,33 +33,37 @@ class Vanguard:
     def loader(self):
         """ { idnum1: { name: 'abc', date: { month: { fare: 1234, payout: 9886 } } other_data: ... }, idnum2: ..., } """
         # Dictionary with employees data from exported CSVs merged into single object.
-        merged = from_df_to_dict(self.dataframe, True)
-        x = XScout('tables/jmenny_seznam_2022_09_27 Fiala.xlsx')
 
-        employee_list = x.employee_list()
+        merged_lists = (servant.from_df_to_dict(self.dataframe, True, 'RodCislo'),
+                        servant.from_df_to_dict(self.dataframe, False, 'JmenoS'))
 
-        return employee_list, merged, x.range
+        x = XScout('tables/jmenny_seznam_2022_09_27 Fiala.xlsx', 'tables/Mzdové náklady 2023.xlsx')
+
+        employee_lists = (x.employee_list_up(), x.employee_list_lo())
+
+        return employee_lists, merged_lists, x.range
 
 
 class XScout:
-    def __init__(self, spreadsheet):
-        self.wb = openpyxl.load_workbook(spreadsheet)
+    def __init__(self, spreadsheet1, spreadsheet2):
+        self.wb_up = openpyxl.load_workbook(spreadsheet1)
+        self.wb_lo = servant.unlock(spreadsheet2, '13881744')
         self.range = self.spread
 
-    def employee_list(self):
+    def employee_list_up(self):
         """ Returns list of people present on spreadsheet. Each sheet has its own dictionary with person:row kw pair"""
         people = []
-        for sheet_index, ws in enumerate(self.wb.worksheets[1:3]):
+        for sheet_index, ws in enumerate(self.wb_up.worksheets[1:3]):
             sheet_ids = {}
             for row in range(self.range[sheet_index][0], self.range[sheet_index][1] + 1):
-                data_row = clean(ws.cell(row, 4).value)
+                data_row = servant.clean(ws.cell(row, 4).value)
                 sheet_ids[data_row] = row
             people.append(sheet_ids)
 
         return people
 
     def first_row(self, sheet_number):
-        ws = self.wb.worksheets[sheet_number]
+        ws = self.wb_up.worksheets[sheet_number]
         row = 1
         while True:
             if ws.cell(row, 1).value == 1:
@@ -64,7 +71,7 @@ class XScout:
             row += 1
 
     def last_row(self, sheet_number):
-        ws = self.wb.worksheets[sheet_number]
+        ws = self.wb_up.worksheets[sheet_number]
         row = self.first_row(sheet_number)
 
         while True:
@@ -80,5 +87,23 @@ class XScout:
             s.append(spread)
         return s
 
+    def employee_list_lo(self):
+        """ Returns list of people present on spreadsheet. Each sheet has its own dictionary with person:row kw pair"""
+        people = []
+        for sheet_index, ws in enumerate(self.wb_lo.worksheets[:-2]):
+            row = 3
+            sheet_names = {}
+            while True:
+                name = ws.cell(row, 2).value
+                if name == '[ENDBLOCK]':
+                    break
+
+                if name:
+                    sheet_names[name] = row
+                row += 1
+
+            people.append(sheet_names)
+
+        return people
 
 
