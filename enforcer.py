@@ -1,5 +1,6 @@
 from vanguard import Vanguard
 from servant import mapping
+from openpyxl.utils import get_column_letter
 
 
 def to_list(idnum, items, row_num, num):
@@ -30,7 +31,8 @@ class Enforcer:
         self.data_lo = dataset[0][1]
         self.merged_up = dataset[1][0]
         self.merged_lo = dataset[1][1]
-        self.last_row = [row[1] + 1 for row in dataset[-1]]
+        self.x = dataset[-1]
+        self.last_row = [row[1] + 1 for row in self.x.range]
 
     def display_data(self):
         for person, data in self.merged_up.items():
@@ -53,12 +55,26 @@ class Enforcer:
     def display_lo(self):
         for person, data in self.merged_lo.items():
             for i, sheet_data in enumerate(self.data_lo):
+                if i < 3:
+                    fare_shift = 4
+                else:
+                    fare_shift = 2
+
                 if person in sheet_data:
-                    print(i, data)
+                    # print(i, data, sheet_data[person])
+                    message = f'Sheet: {i}, Line: {sheet_data[person]}, Person: {person}'
+                    for date, money in data['Date'].items():
+                        col = self.x.get_month(date, i)
+                        fare_col = col + fare_shift
+                        col_letter = get_column_letter(col)
+                        fare_letter = get_column_letter(fare_col)
+                        message += f'\n- {col_letter}{sheet_data[person]}: {money["Payout"]}'
+                        if money["Fare"]:
+                            message += f', {fare_letter}{sheet_data[person]}: {money["Fare"]}'
+                    print(message)
 
 
 vanguard = Vanguard(file_mzdy='data/Q2.CSV', file_pracov='data/PRACOVQ2.CSV')
 enforcer = Enforcer(vanguard.loader)
 # enforcer.display_data()
 enforcer.display_lo()
-

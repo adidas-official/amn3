@@ -31,9 +31,10 @@ class Vanguard:
 
     @property
     def loader(self):
-        """ { idnum1: { name: 'abc', date: { month: { fare: 1234, payout: 9886 } } other_data: ... }, idnum2: ..., } """
-        # Dictionary with employees data from exported CSVs merged into single object.
+        """ Running all important pieces together. Creating list of employees in spreadsheets. """
 
+        # Dictionary with employees data from exported CSVs merged into single object.
+        # { idnum1: { name: 'abc', date: { month: { fare: 1234, payout: 9886 } } other_data: ... }, idnum2: ..., }
         merged_lists = (servant.from_df_to_dict(self.dataframe, True, 'RodCislo'),
                         servant.from_df_to_dict(self.dataframe, False, 'JmenoS'))
 
@@ -41,7 +42,7 @@ class Vanguard:
 
         employee_lists = (x.employee_list_up(), x.employee_list_lo())
 
-        return employee_lists, merged_lists, x.range
+        return employee_lists, merged_lists, x
 
 
 class XScout:
@@ -105,5 +106,24 @@ class XScout:
             people.append(sheet_names)
 
         return people
+
+    def get_month(self, date, sheet_num):
+        """ Gets month column index in local table from date in employee data object """
+        # Counter for keeping track of curent column index
+        counter = 0
+        # Number of how many times merged cell was found
+        m = 0
+        month_num = int(date.split('.')[0])
+        cell = False
+
+        while True:
+            if m == month_num:
+                return cell.column
+
+            cell = self.wb_lo.worksheets[sheet_num].cell(row=1, column=counter + 3)
+            counter += 1
+
+            if not type(cell).__name__ == 'MergedCell' and cell.value:
+                m += 1
 
 
