@@ -80,6 +80,25 @@ class XScout:
                 return row - 1
             row += 1
 
+    def last_row_lo(self, sheet_number):
+        ws = self.wb_lo.worksheets[sheet_number]
+        row = 3
+
+        while True:
+            if not ws.cell(row, 2).value:
+                return row - 1
+            row += 1
+
+    def lastrow(self, workbook, sheet_number, row=False):
+        ws = workbook[sheet_number]
+        if not row:
+            row = self.first_row(sheet_number)
+
+        while True:
+            if not ws.cell(row, 2).value:
+                return row - 1
+            row += 1
+
     @property
     def spread(self):
         s = []

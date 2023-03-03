@@ -54,6 +54,7 @@ class Enforcer:
 
     def display_lo(self):
         for person, data in self.merged_lo.items():
+            person_found = False
             for i, sheet_data in enumerate(self.data_lo):
                 if i < 3:
                     fare_shift = 4
@@ -61,6 +62,7 @@ class Enforcer:
                     fare_shift = 2
 
                 if person in sheet_data:
+                    person_found = True
                     # print(i, data, sheet_data[person])
                     message = f'Sheet: {i}, Line: {sheet_data[person]}, Person: {person}'
                     for date, money in data['Date'].items():
@@ -72,9 +74,18 @@ class Enforcer:
                         if money["Fare"]:
                             message += f', {fare_letter}{sheet_data[person]}: {money["Fare"]}'
                     print(message)
+                # else:
+                #     print(f'Person {person} not in {i}')
+            if not person_found:
+                print(f'Person {person} is new and should be written to {data["Code"]} sheet')
+
+    def show_all(self):
+        for name, data in self.merged_lo.items():
+            print(name, data)
 
 
 vanguard = Vanguard(file_mzdy='data/Q2.CSV', file_pracov='data/PRACOVQ2.CSV')
 enforcer = Enforcer(vanguard.loader)
 # enforcer.display_data()
 enforcer.display_lo()
+# enforcer.show_all()
