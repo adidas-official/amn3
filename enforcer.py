@@ -1,3 +1,5 @@
+from itertools import chain
+
 from vanguard import Vanguard
 from servant import mapping
 from openpyxl.utils import get_column_letter
@@ -79,13 +81,33 @@ class Enforcer:
             if not person_found:
                 print(f'Person {person} is new and should be written to {data["Code"]} sheet')
 
+    def get_missing(self):
+        # merged_lo is dictionary with all data for each employee
+        # 'Arvensisová Radka': {'Name': 'Arvensisová Radka', 'Code': 'Prode',...
+        # data_lo is list of dictionaries with key:value pairs being 'name':'line_number' for each sheet
+        # [{'Bobok Vilém': 3, 'Cenefels Jan': 4, 'Dbalý Petr': 5, 'Diviak Miroslav': 6, ...
+        data_for_month = set(self.merged_lo.keys())
+        names_in_xlsx = set(chain.from_iterable(d.keys() for d in self.data_lo))
+        print('People without pay for this month')
+        print(names_in_xlsx.difference(data_for_month))
+        print(self.get_last_rows())
+        print('New people')
+        for name in data_for_month.difference(names_in_xlsx):
+            print(self.merged_lo[name]['Name'], self.merged_lo[name]['Code'])
+            for month, money in self.merged_lo[name]['Date'].items():
+                print(month.split('.')[0], money['Payout'], money['Fare'])
+
     def show_all(self):
         for name, data in self.merged_lo.items():
             print(name, data)
+
+    def get_last_rows(self):
+        last_rows = [self.x.last_row_lo(i) for i in range(8)]
+        return last_rows
 
 
 vanguard = Vanguard(file_mzdy='data/Q2.CSV', file_pracov='data/PRACOVQ2.CSV')
 enforcer = Enforcer(vanguard.loader)
 # enforcer.display_data()
-enforcer.display_lo()
-# enforcer.show_all()
+# enforcer.display_lo()
+enforcer.get_missing()
