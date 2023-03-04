@@ -56,7 +56,6 @@ class Enforcer:
 
     def display_lo(self):
         for person, data in self.merged_lo.items():
-            person_found = False
             for i, sheet_data in enumerate(self.data_lo):
                 if i < 3:
                     fare_shift = 4
@@ -64,7 +63,6 @@ class Enforcer:
                     fare_shift = 2
 
                 if person in sheet_data:
-                    person_found = True
                     # print(i, data, sheet_data[person])
                     message = f'Sheet: {i}, Line: {sheet_data[person]}, Person: {person}'
                     for date, money in data['Date'].items():
@@ -76,26 +74,19 @@ class Enforcer:
                         if money["Fare"]:
                             message += f', {fare_letter}{sheet_data[person]}: {money["Fare"]}'
                     print(message)
-                # else:
-                #     print(f'Person {person} not in {i}')
-            if not person_found:
-                print(f'Person {person} is new and should be written to {data["Code"]} sheet')
 
-    def get_missing(self):
+    def new_employees(self):
         # merged_lo is dictionary with all data for each employee
         # 'Arvensisová Radka': {'Name': 'Arvensisová Radka', 'Code': 'Prode',...
         # data_lo is list of dictionaries with key:value pairs being 'name':'line_number' for each sheet
         # [{'Bobok Vilém': 3, 'Cenefels Jan': 4, 'Dbalý Petr': 5, 'Diviak Miroslav': 6, ...
         data_for_month = set(self.merged_lo.keys())
         names_in_xlsx = set(chain.from_iterable(d.keys() for d in self.data_lo))
-        print('People without pay for this month')
-        print(names_in_xlsx.difference(data_for_month))
-        print(self.get_last_rows())
-        print('New people')
-        for name in data_for_month.difference(names_in_xlsx):
-            print(self.merged_lo[name]['Name'], self.merged_lo[name]['Code'])
-            for month, money in self.merged_lo[name]['Date'].items():
-                print(month.split('.')[0], money['Payout'], money['Fare'])
+        # print('People without pay for this month')
+        # print(names_in_xlsx.difference(data_for_month))
+        # print(self.get_last_rows())
+        # print('New people')
+        return [self.merged_lo[name] for name in data_for_month.difference(names_in_xlsx)]
 
     def show_all(self):
         for name, data in self.merged_lo.items():
@@ -110,4 +101,4 @@ vanguard = Vanguard(file_mzdy='data/Q2.CSV', file_pracov='data/PRACOVQ2.CSV')
 enforcer = Enforcer(vanguard.loader)
 # enforcer.display_data()
 # enforcer.display_lo()
-enforcer.get_missing()
+# print(enforcer.new_employees())

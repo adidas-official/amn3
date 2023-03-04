@@ -1,6 +1,6 @@
-from io import BytesIO
+import math
+from itertools import chain
 
-import msoffcrypto
 import pandas as pd
 import servant
 import openpyxl
@@ -43,6 +43,14 @@ class Vanguard:
         employee_lists = (x.employee_list_up(), x.employee_list_lo())
 
         return employee_lists, merged_lists, x
+
+    def get_q(self):
+        dates = self.dataframe['RokMes'].unique()
+        months = [int(month.split('.')[0]) for month in dates]
+        nums = [math.ceil(i / 3) for i in months]
+        result = all([x == nums[0] for x in nums])
+        if result:
+            return nums[0]
 
 
 class XScout:
