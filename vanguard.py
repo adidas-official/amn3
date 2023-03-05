@@ -1,5 +1,4 @@
 import math
-from itertools import chain
 
 import pandas as pd
 import servant
