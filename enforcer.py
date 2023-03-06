@@ -119,6 +119,7 @@ class Enforcer:
 
     def write_data_lo(self):
         wb = self.x.wb_lo
+        self.write_new_emps(wb)
         for person, data in self.merged_lo.items():
             for i, sheet_data in enumerate(self.data_lo):
                 if i < 3:
@@ -178,6 +179,35 @@ class Enforcer:
                     message += f', {fare_letter}{last_lines[sheet_index]}: {money["Fare"]}'
             print(message)
 
+    def write_new_emps(self, wb):
+        last_lines = self.get_last_rows()
+
+        for emp in enforcer.get_new_emps():
+            sheet_index = servant.get_sheet_by_emp_data(emp['Code'], emp['Cat'])
+
+            ws = wb.worksheets[sheet_index]
+            servant.insert_row(ws, last_lines[sheet_index] + 1)
+            ws.cell(last_lines[sheet_index] + 1, 2).value = emp["Name"]
+
+            if emp["PensionType"]:
+                ws.cell(last_lines[sheet_index] + 1, 1).value = 1
+            else:
+                ws.cell(last_lines[sheet_index] + 1, 1).value = 0
+
+            if sheet_index < 3:
+                fare_shift = 4
+            else:
+                fare_shift = 2
+
+            for date, money in emp['Date'].items():
+                col = self.x.get_month(date, sheet_index)
+                fare_col = col + fare_shift
+                ws.cell(last_lines[sheet_index] + 1, col).value = money["Payout"]
+                if money["Fare"]:
+                    ws.cell(last_lines[sheet_index] + 1, fare_col).value = money["Fare"]
+            last_lines[sheet_index] += 1
+        # wb.save('temp.xlsx')
+
     def write_data(self):
         wb = self.x.wb_up
         for person, data in self.merged_up.items():
@@ -215,5 +245,5 @@ enforcer = Enforcer(vanguard.loader)
 # enforcer.display_data()
 # enforcer.display_lo()
 # enforcer.display_new_emps()
-# enforcer.write_data()
+enforcer.write_data()
 enforcer.write_data_lo()

@@ -148,11 +148,19 @@ def insert_row(worksheet, row_index):
     # Define new range of table
     worksheet.tables[table_name].ref = new_range
 
+    pattern = re.compile(r'(?<=[A-Z])(\d+)')
+
     # Copy all cells from the row above the insertion point, including formatting and formulas
     for col in range(1, worksheet.max_column + 1):
         cell_above = worksheet.cell(row=row_index - 1, column=col)
         cell_to_copy = worksheet.cell(row=row_index, column=col)
-        cell_to_copy.value = cell_above.value
+        cell_value = cell_above.value
+        cell_to_copy.value = cell_value
+
+        if cell_value:
+            new_cell_value = re.sub(pattern, str(row_index), str(cell_value))
+            cell_to_copy.value = new_cell_value
+
         cell_to_copy.number_format = cell_above.number_format
         cell_to_copy.font = copy(cell_above.font)
         if cell_above.has_style:
@@ -161,3 +169,10 @@ def insert_row(worksheet, row_index):
             cell_to_copy.number_format = copy(cell_above.number_format)
             cell_to_copy.protection = copy(cell_above.protection)
             cell_to_copy.alignment = copy(cell_above.alignment)
+
+
+def table_testing():
+    wb = openpyxl.load_workbook('tables/Mzdové náklady 2023-open.xlsx')
+    ws = wb.worksheets[0]
+    insert_row(ws, 20)
+    wb.save('temp.xlsx')
