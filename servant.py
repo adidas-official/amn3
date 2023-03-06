@@ -59,8 +59,17 @@ def get_pension_type(pentype) -> str:
         return 'OZP12'
     elif 'invalidní 3.' in pentype:
         return 'TZP'
+    elif 'zdravotně' in pentype:
+        return 'OZZ'
     else:
         return ''
+
+
+def split_name(name):
+    fullname = name.split(' ')
+    firstname = fullname[-1]
+    lastname = ' '.join(fullname[:-1])
+    return lastname, firstname
 
 
 def get_sheet_by_emp_data(workplace, emp_status):

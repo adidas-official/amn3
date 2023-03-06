@@ -2,7 +2,7 @@ from itertools import chain
 
 import servant
 from vanguard import Vanguard
-from servant import mapping, column_map
+from servant import mapping, column_map, split_name
 from openpyxl.utils import get_column_letter
 
 
@@ -18,23 +18,46 @@ def to_list(idnum, items, row_num, num):
     print(message)
 
 
-def write_to_list(idnum, items, row_num, worksheet):
-    print(items)
+def write_to_list(idnum, items, row_num, worksheet, new=False):
+    # print(items)
     if worksheet.title.startswith('2'):
         num = 0
+        offset = 1
     else:
         num = 1
+        offset = 0
 
     for month, payout_data in items["Date"].items():
         m = (int(month.split('.')[0]) + 2) % 3
-        offset = 0
+        shift = 14 - m
         if items["PensionType"]:
             month_col_status = column_map[num][m]
             worksheet.cell(row_num, month_col_status).value = items["PensionType"]
-            offset = 1
 
         month_col_payout = column_map[num][m] + offset
         worksheet.cell(row_num, month_col_payout).value = payout_data["Payout"]
+        if payout_data["Payout"] > 0:
+            worksheet.cell(row_num, month_col_payout + shift).value = f'=14200-' \
+                                                                      f'{get_column_letter(month_col_payout + 1)}' \
+                                                                      f'{row_num}'
+
+        if num == 0:
+            worksheet.cell(row_num, 6).value = items["EndEmployment"]
+
+        if new:
+            lastname, firstname = split_name(items["Name"])
+            worksheet.cell(row_num, 2).value = lastname
+            worksheet.cell(row_num, 3).value = firstname
+            if num == 0:
+                worksheet.cell(row_num, 4).value = idnum
+                worksheet.cell(row_num, 5).value = items["StartEmployment"]
+                worksheet.cell(row_num, 7).value = items["InsCode"]
+                worksheet.cell(row_num, 8).value = items["PensionStart"]
+            elif num == 1:
+                worksheet.cell(row_num, 4).value = idnum[:6] + '/' + idnum[6:]
+                worksheet.cell(row_num, 5).value = '-\'\'-'
+                worksheet.cell(row_num, 6).value = 'PA'
+                worksheet.cell(row_num, 7).value = '100%'
 
 
 def new_person(idnum, items):
@@ -135,31 +158,23 @@ class Enforcer:
         for person, data in self.merged_up.items():
             if person in self.data_up[0]:
                 ws = wb.worksheets[1]
-                # for qwerty in dir(ws):
-                #     print(qwerty)
                 write_to_list(person, data, self.data_up[0][person], ws)
 
-            # # def to_list(idnum, items, row_num, num):
-            #     message = f'{person} {data["Name"]} is in sheet{2} row #{self.data_up[0][person]}.'
-            #     for month, payout_data in items["Date"].items():
-            #         m = (int(month.split('.')[0]) + 2) % 3
-            #
-            #         month_col = mapping[num - 2][m]
-            #
-            #         message += f'\n-Payout for month {month}: {payout_data["Payout"]}=>{month_col}{row_num}'
-
             elif person in self.data_up[1]:
-                # to_list(person, data, self.data_up[1][person], 3)
                 ws = wb.worksheets[2]
                 write_to_list(person, data, self.data_up[1][person], ws)
             else:
-                print(f'{person} {data["Name"]} is new')
+                # print(f'{person} {data["Name"]} is new')
                 if data['PensionType'] != '':
-                    to_list(person, data, self.last_row[0], 2)
+                    ws = wb.worksheets[1]
+                    # to_list(person, data, self.last_row[0], 2)
+                    write_to_list(person, data, self.last_row[0], ws, new=True)
                     self.last_row[0] += 1
                     # message += 'belongs to list2'
                 else:
-                    to_list(person, data, self.last_row[1], 3)
+                    # to_list(person, data, self.last_row[1], 3)
+                    ws = wb.worksheets[2]
+                    write_to_list(person, data, self.last_row[1], ws, new=True)
                     self.last_row[1] += 1
                     # message += 'belongs to list3'
                 # print(message)
@@ -172,7 +187,7 @@ class Enforcer:
 
 vanguard = Vanguard(file_mzdy='data/Q2.CSV', file_pracov='data/PRACOVQ2.CSV')
 enforcer = Enforcer(vanguard.loader)
-enforcer.display_data()
+# enforcer.display_data()
 # enforcer.display_lo()
 # enforcer.display_new_emps()
 enforcer.write_data()
