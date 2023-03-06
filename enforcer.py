@@ -117,6 +117,31 @@ class Enforcer:
                             message += f', {fare_letter}{sheet_data[person]}: {money["Fare"]}'
                     print(message)
 
+    def write_data_lo(self):
+        wb = self.x.wb_lo
+        for person, data in self.merged_lo.items():
+            for i, sheet_data in enumerate(self.data_lo):
+                if i < 3:
+                    fare_shift = 4
+                else:
+                    fare_shift = 2
+
+                if person in sheet_data:
+                    # print(i, data, sheet_data[person])
+                    message = f'Sheet: {i}, Line: {sheet_data[person]}, Person: {person}, {data["Code"]}, {data["Cat"]}'
+                    ws = wb.worksheets[i]
+                    for date, money in data['Date'].items():
+                        col = self.x.get_month(date, i)
+                        fare_col = col + fare_shift
+                        col_letter = get_column_letter(col)
+                        fare_letter = get_column_letter(fare_col)
+                        message += f'\n- {col_letter}{sheet_data[person]}: {money["Payout"]}'
+                        ws.cell(sheet_data[person], col).value = money["Payout"]
+                        if money["Fare"]:
+                            message += f', {fare_letter}{sheet_data[person]}: {money["Fare"]}'
+                            ws.cell(sheet_data[person], fare_col).value = money["Fare"]
+        wb.save('temp.xlsx')
+
     def get_new_emps(self):
         # merged_lo is dictionary with all data for each employee
         # 'Arvensisová Radka': {'Name': 'Arvensisová Radka', 'Code': 'Prode',...
@@ -190,4 +215,5 @@ enforcer = Enforcer(vanguard.loader)
 # enforcer.display_data()
 # enforcer.display_lo()
 # enforcer.display_new_emps()
-enforcer.write_data()
+# enforcer.write_data()
+enforcer.write_data_lo()
