@@ -176,3 +176,60 @@ def table_testing():
     ws = wb.worksheets[0]
     insert_row(ws, 20)
     wb.save('temp.xlsx')
+
+
+def update_formulas():
+    wb = openpyxl.load_workbook('tables/Mzdové náklady 2023-open.xlsx')
+    ws = wb.worksheets[8]
+    for j in range(3, 11):
+        table_num = 1
+        if j == 4:
+            table_num = 3
+        elif j == 5:
+            table_num = 4
+        elif j == 6:
+            table_num = 7
+        elif j == 7:
+            table_num = 8
+        elif j == 8:
+            table_num = 2
+        elif j == 10:
+            table_num = 11
+        for i in range(1, 13):
+            if j == 9:
+                string = f'=SUMIF(Tabulka9[přičítat{i}],"ANO",Tabulka9[součet{i}])'
+            else:
+                if i == 1:
+                    string = f'=SUM(Tabulka{table_num}[součet])'
+                else:
+                    string = f'=SUM(Tabulka{table_num}[součet{i}])'
+            ws.cell(j, i+1).value = string
+    wb.save('tables/Mzdové náklady 2023-open.xlsx')
+
+
+def update_f(column_name, tables, row):
+    wb = openpyxl.load_workbook('tables/Mzdové náklady 2023-open.xlsx')
+    ws = wb.worksheets[8]
+    for col in range(1, 13):
+        delimiter = ','
+        if col == 1:
+            num = ''
+        else:
+            num = col
+        formula = f'=SUM('
+        for table_num in tables:
+            if table_num == tables[-1]:
+                delimiter = ''
+            formula += f'SUM(Tabulka{table_num}[{column_name}{num}]){delimiter}'
+        formula += f')'
+        print(formula)
+        ws.cell(row, col + 1).value = formula
+
+    wb.save('tables/Mzdové náklady 2023-open.xlsx')
+
+
+# update_f('odměna', [1, 2, 3, 4, 7, 8, 9, 11], 11)
+# update_f('str.', [1, 2, 3], 12)
+# update_f('refundace', [1, 2, 3, 4, 7, 8], 13)
+# update_f('jízdné', [1, 2, 3, 4, 7, 8], 14)
+# update_f('mzd.nákl.', [1, 2, 3, 4, 7, 8, 9, 11], 15)
