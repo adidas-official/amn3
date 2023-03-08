@@ -41,7 +41,7 @@ class Vanguard:
 
         employee_lists = (x.employee_list_up(), x.employee_list_lo())
 
-        return employee_lists, merged_lists, x
+        return employee_lists, merged_lists, x, self.get_q()
 
     def get_q(self):
         dates = self.dataframe['RokMes'].unique()
@@ -141,5 +141,3 @@ class XScout:
 
             if not type(cell).__name__ == 'MergedCell' and cell.value:
                 m += 1
-
-

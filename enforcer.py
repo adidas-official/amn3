@@ -1,4 +1,5 @@
 from itertools import chain
+from datetime import datetime
 
 import servant
 from vanguard import Vanguard
@@ -75,8 +76,9 @@ class Enforcer:
         self.data_lo = dataset[0][1]
         self.merged_up = dataset[1][0]
         self.merged_lo = dataset[1][1]
-        self.x = dataset[-1]
+        self.x = dataset[-2]
         self.last_row = [row[1] + 1 for row in self.x.range]
+        self.quarter = dataset[-1]
 
     def display_data(self):
         for person, data in self.merged_up.items():
@@ -210,6 +212,11 @@ class Enforcer:
 
     def write_data(self):
         wb = self.x.wb_up
+        ws = wb.worksheets[0]
+        ws.cell(6, 4).value = self.quarter
+        ws.cell(6, 9).value = datetime.now().year
+        ws.cell(30, 5).value = datetime.now().strftime('%d.%m.%Y')
+
         for person, data in self.merged_up.items():
             if person in self.data_up[0]:
                 ws = wb.worksheets[1]
