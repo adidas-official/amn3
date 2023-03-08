@@ -18,6 +18,7 @@ class Inspector:
     def refund_lo(self):
         ws = self.wb_lo.worksheets[-2]
         q = self.quarter
+
         if type(q) != int:
             if q.isnumeric():
                 q = int(q)
@@ -31,6 +32,11 @@ class Inspector:
         ws = self.wb_up.worksheets[0]
         return ws.cell(6, 4).value
 
+    def refund_are_equal(self):
+        if self.refund_up == self.refund_lo:
+            return True
+        return False
+
 
 file_up = 'tables/jmenny_seznam_2022_09_27 Bereko.xlsx'
 file_lo = 'tables/mzdové náklady bereko 2023.xlsx'
@@ -38,8 +44,6 @@ file_lo = 'tables/mzdové náklady bereko 2023.xlsx'
 if all((Path(file_up).exists(), Path(file_lo).exists())):
     print('ok')
     inspector = Inspector(file_up, file_lo)
-    print(inspector.refund_up)
-    print(inspector.quarter)
-    print(inspector.refund_lo)
+    print(inspector.refund_are_equal())
 else:
     print('File does not exist')
