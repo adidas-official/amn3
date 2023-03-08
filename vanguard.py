@@ -6,6 +6,7 @@ import openpyxl
 import openpyxl.utils
 
 
+# Rename to Assembler
 class Vanguard:
     def __init__(self, file_mzdy, file_pracov):
         self.mzdy = file_mzdy
@@ -41,17 +42,10 @@ class Vanguard:
 
         employee_lists = (x.employee_list_up(), x.employee_list_lo())
 
-        return employee_lists, merged_lists, x, self.get_q()
-
-    def get_q(self):
-        dates = self.dataframe['RokMes'].unique()
-        months = [int(month.split('.')[0]) for month in dates]
-        nums = [math.ceil(i / 3) for i in months]
-        result = all([x == nums[0] for x in nums])
-        if result:
-            return nums[0]
+        return employee_lists, merged_lists, x, servant.get_q(self.dataframe)
 
 
+# Rename to Scout
 class XScout:
     def __init__(self, spreadsheet1, spreadsheet2):
         self.wb_up = openpyxl.load_workbook(spreadsheet1)

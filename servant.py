@@ -35,7 +35,16 @@ column_map = [
 ]
 
 
-def unlock(f, pwd):
+def get_q(dataframe):
+    dates = dataframe['RokMes'].unique()
+    months = [int(month.split('.')[0]) for month in dates]
+    nums = [math.ceil(i / 3) for i in months]
+    result = all([x == nums[0] for x in nums])
+    if result:
+        return nums[0]
+
+
+def unlock(f, pwd, data_only=False):
     try:
         decrypted_wb = BytesIO()
         with open(f, 'rb') as f:
@@ -43,9 +52,9 @@ def unlock(f, pwd):
             office_file.load_key(password=pwd)
             office_file.decrypt(decrypted_wb)
 
-        return openpyxl.load_workbook(filename=decrypted_wb)
+        return openpyxl.load_workbook(filename=decrypted_wb, data_only=data_only)
     except (UnboundLocalError, msoffcrypto.exceptions.FileFormatError):
-        return openpyxl.load_workbook(f)
+        return openpyxl.load_workbook(f, data_only=data_only)
 
 
 def clean(text) -> str:
