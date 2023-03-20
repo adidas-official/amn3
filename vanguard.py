@@ -1,13 +1,10 @@
-import math
-
 import pandas as pd
 import servant
 import openpyxl
 import openpyxl.utils
 
 
-# Rename to Assembler
-class Vanguard:
+class Assembler:
     def __init__(self, file_mzdy, file_pracov):
         self.mzdy = file_mzdy
         self.pracov = file_pracov
@@ -38,15 +35,14 @@ class Vanguard:
         merged_lists = (servant.from_df_to_dict(self.dataframe, True, 'RodCislo'),
                         servant.from_df_to_dict(self.dataframe, False, 'JmenoS'))
 
-        x = XScout('tables/jmenny_seznam_2022_09_27 Fiala.xlsx', 'tables/Mzdové náklady 2023.xlsx')
+        scout = Scout('tables/jmenny_seznam_2022_09_27 Fiala.xlsx', 'tables/Mzdové náklady 2023.xlsx')
 
-        employee_lists = (x.employee_list_up(), x.employee_list_lo())
+        employee_lists = (scout.employee_list_up(), scout.employee_list_lo())
 
-        return employee_lists, merged_lists, x, servant.get_q(self.dataframe)
+        return employee_lists, merged_lists, scout, servant.get_q(self.dataframe)
 
 
-# Rename to Scout
-class XScout:
+class Scout:
     def __init__(self, spreadsheet1, spreadsheet2):
         self.wb_up = openpyxl.load_workbook(spreadsheet1)
         self.wb_lo = servant.unlock(spreadsheet2, '13881744')

@@ -1,5 +1,7 @@
 import csv
+import math
 import re
+import zipfile
 from io import BytesIO
 
 import msoffcrypto
@@ -7,6 +9,7 @@ import openpyxl
 from openpyxl.utils import get_column_letter
 
 from copy import copy
+from shutil import which
 
 mapping = [
     {
@@ -44,17 +47,24 @@ def get_q(dataframe):
         return nums[0]
 
 
-def unlock(f, pwd, data_only=False):
+def unlock(filename, password=None, data_only=False):
     try:
-        decrypted_wb = BytesIO()
-        with open(f, 'rb') as f:
-            office_file = msoffcrypto.OfficeFile(f)
-            office_file.load_key(password=pwd)
-            office_file.decrypt(decrypted_wb)
+        wb = openpyxl.load_workbook(filename, password, data_only=data_only)
+        return wb
+    except zipfile.BadZipFile:
+        pass
 
-        return openpyxl.load_workbook(filename=decrypted_wb, data_only=data_only)
-    except (UnboundLocalError, msoffcrypto.exceptions.FileFormatError):
-        return openpyxl.load_workbook(f, data_only=data_only)
+    try:
+        with open(filename, 'rb') as f:
+            office_file = msoffcrypto.OfficeFile(f)
+            if password:
+                office_file.load_key(password=password)
+            decrypted_wb = BytesIO()
+            office_file.decrypt(decrypted_wb)
+            wb = openpyxl.load_workbook(decrypted_wb, data_only=data_only)
+            return wb
+    except (msoffcrypto.exceptions.FileFormatError, ValueError):
+        pass
 
 
 def clean(text) -> str:
@@ -236,6 +246,9 @@ def update_f(column_name, tables, row):
 
     wb.save('tables/Mzdové náklady 2023-open.xlsx')
 
+
+def is_tool(name):
+    return which(name) is not None
 
 # update_f('odměna', [1, 2, 3, 4, 7, 8, 9, 11], 11)
 # update_f('str.', [1, 2, 3], 12)

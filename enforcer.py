@@ -2,7 +2,7 @@ from itertools import chain
 from datetime import datetime
 
 import servant
-from vanguard import Vanguard
+from vanguard import Assembler
 from servant import mapping, column_map, split_name
 from openpyxl.utils import get_column_letter
 
@@ -208,7 +208,6 @@ class Enforcer:
                 if money["Fare"]:
                     ws.cell(last_lines[sheet_index] + 1, fare_col).value = money["Fare"]
             last_lines[sheet_index] += 1
-        # wb.save('temp.xlsx')
 
     def write_data(self):
         wb = self.x.wb_up
@@ -247,7 +246,7 @@ class Enforcer:
         return last_rows
 
 
-vanguard = Vanguard(file_mzdy='data/Q2.CSV', file_pracov='data/PRACOVQ2.CSV')
+vanguard = Assembler(file_mzdy='data/Q2.CSV', file_pracov='data/PRACOVQ2.CSV')
 enforcer = Enforcer(vanguard.loader)
 # enforcer.display_data()
 # enforcer.display_lo()
