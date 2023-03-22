@@ -176,7 +176,7 @@ def insert_row(worksheet, row_index):
         cell_value = cell_above.value
         cell_to_copy.value = cell_value
 
-        if cell_value:
+        if cell_value and type(cell_value) is not int:
             new_cell_value = re.sub(pattern, str(row_index), str(cell_value))
             cell_to_copy.value = new_cell_value
 
