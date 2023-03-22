@@ -4,9 +4,7 @@ import openpyxl
 from openpyxl.utils import column_index_from_string
 
 from pathlib import Path
-import subprocess
-import pyautogui
-import time
+import pandas as pd
 
 
 class Inspector:
@@ -21,14 +19,14 @@ class Inspector:
         ws = wb_up.worksheets[0]
 
         if ws.cell(21, 7).value is None:
-            resave_xlsx(self.file_up)
+            servant.resave_xlsx(self.file_up)
             wb_up = openpyxl.load_workbook(self.file_up, data_only=True)
 
         wb_lo = servant.unlock(self.file_lo, '13881744', data_only=True)
         ws = wb_lo.worksheets[-2]
 
         if ws.cell(3, 2).value is None:
-            resave_xlsx(self.file_lo)
+            servant.resave_xlsx(self.file_lo)
             wb_lo = servant.unlock(self.file_lo, '13881744', data_only=True)
 
         return wb_up, wb_lo
@@ -72,6 +70,16 @@ class Inspector:
             print(f'RUP: {rup}, RLO: {rlo}, difference: {rup - rlo}')
             return False
 
+    def get_refund_of_emp(self, row, month):
+        ws = self.wb_up.worksheets[1]
+        total = 0
+
+        for i in range(3):
+            val = ws.cell(row, 12 + (month * 5) + i).value
+            if val:
+                total += val
+        return total
+
     def sum_month_refund(self, month):
         ws = self.wb_up.worksheets[1]
 
@@ -82,10 +90,7 @@ class Inspector:
             if not ws.cell(row, 2).value:
                 break
 
-            for i in range(3):
-                val = ws.cell(row, 12 + (month * 5) + i).value
-                if val:
-                    total += val
+            total += self.get_refund_of_emp(row, month)
             row += 1
         return total
 
@@ -117,52 +122,84 @@ class Inspector:
             return faulty_months
         return False
 
+    def get_month(self, month, sheet_num):
+        """ Gets month column index in local table from date in employee data object """
+        # Counter for keeping track of curent column index
+        counter = 0
+        # Number of how many times merged cell was found
+        m = 0
+        month_num = self.q * 3 - 2 + month
+        cell = False
+
+        while True:
+            if m == month_num:
+                return cell.column
+
+            cell = self.wb_lo.worksheets[sheet_num].cell(row=1, column=counter + 3)
+            counter += 1
+
+            if not type(cell).__name__ == 'MergedCell' and cell.value:
+                m += 1
+
+    @property
+    def names_in_table(self):
+        ws = self.wb_up.worksheets[1]
+        names = {}
+
+        row = 13
+
+        while True:
+            name = ws.cell(row, 2).value
+            if not name:
+                break
+
+            names.setdefault(name, [])
+
+            for i in range(3):
+                total = self.get_refund_of_emp(row, i)
+                names[name].append(total)
+            row += 1
+        return names
+
+    def names_in_table_2(self):
+        wb = openpyxl.load_workbook('temp.xlsx', data_only=True, read_only=False)
+        sheets_df = []
+        table_indexes = [1, 2, 3, 4, 7, 8]
+
+        # Iterate over sheets
+        for sheetindex, ws in zip(table_indexes, wb.worksheets[:-4]):
+            headers = []
+            tab = ws.tables[f'Tabulka{sheetindex}']
+            table_range = tab.ref
+            data_rows = []
+
+            header = False
+
+            for row in ws[table_range]:
+                data_cols = []
+
+                for cell in row:
+                    if not header:
+                        headers.append(cell.value)
+                    else:
+                        data_cols.append(cell.value)
+
+                if not header:
+                    header = True
+                    continue
+
+                data_rows.append(data_cols)
+
+            df = pd.DataFrame(data_rows, columns=headers, index=None)
+            print(df[['Jméno', 'refundace7']])
+
 
 file_up = 'temp-up.xlsx'
 file_lo = 'temp.xlsx'
 
 
-def resave_xlsx(file):
-
-    if servant.is_tool('libreoffice'):
-        xlsx_tool = 'libreoffice'
-    elif servant.is_tool('ms excel'):
-        xlsx_tool = 'ms excel'
-    elif servant.is_tool('openoffice'):
-        xlsx_tool = 'openoffice'
-    else:
-        print('No xlsx processor installed. Please install MS Excel, LibreOffice or OpenOffice')
-        return 0
-
-    # Open xlsx editing software
-    cmd = [xlsx_tool, file]
-    subprocess.Popen(cmd)
-
-    # Wait until spreadsheet is loaded
-    time.sleep(3)
-
-    # Switch focus to edit software
-    cmd = ['wmctrl', '-a', xlsx_tool]
-    subprocess.Popen(cmd)
-
-    # Save as
-    pyautogui.hotkey('ctrl', 'shift', 's')
-    time.sleep(0.5)
-    pyautogui.press('enter')
-    time.sleep(0.5)
-    pyautogui.press('right')
-    time.sleep(0.5)
-    pyautogui.press('enter')
-    time.sleep(0.5)
-
-    # Close the program
-    pyautogui.hotkey('alt', 'f4')
-    time.sleep(0.5)
-
-
 if all((Path(file_up).exists(), Path(file_lo).exists())):
     inspector = Inspector(file_up, file_lo)
-    print(inspector.faulty_months)
-    # print(inspector.refund_are_equal())
+    inspector.names_in_table_2()
 else:
     print('File does not exist')

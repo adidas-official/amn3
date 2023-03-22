@@ -1,11 +1,14 @@
 import csv
 import math
 import re
+import subprocess
+import time
 import zipfile
 from io import BytesIO
 
 import msoffcrypto
 import openpyxl
+import pyautogui
 from openpyxl.utils import get_column_letter
 
 from copy import copy
@@ -249,6 +252,45 @@ def update_f(column_name, tables, row):
 
 def is_tool(name):
     return which(name) is not None
+
+
+def resave_xlsx(file):
+
+    if is_tool('libreoffice'):
+        xlsx_tool = 'libreoffice'
+    elif is_tool('ms excel'):
+        xlsx_tool = 'ms excel'
+    elif is_tool('openoffice'):
+        xlsx_tool = 'openoffice'
+    else:
+        print('No xlsx processor installed. Please install MS Excel, LibreOffice or OpenOffice')
+        return 0
+
+    # Open xlsx editing software
+    cmd = [xlsx_tool, file]
+    subprocess.Popen(cmd)
+
+    # Wait until spreadsheet is loaded
+    time.sleep(3)
+
+    # Switch focus to edit software
+    cmd = ['wmctrl', '-a', xlsx_tool]
+    subprocess.Popen(cmd)
+
+    # Save as
+    pyautogui.hotkey('ctrl', 'shift', 's')
+    time.sleep(0.5)
+    pyautogui.press('enter')
+    time.sleep(0.5)
+    pyautogui.press('right')
+    time.sleep(0.5)
+    pyautogui.press('enter')
+    time.sleep(0.5)
+
+    # Close the program
+    pyautogui.hotkey('alt', 'f4')
+    time.sleep(0.5)
+
 
 # update_f('odměna', [1, 2, 3, 4, 7, 8, 9, 11], 11)
 # update_f('str.', [1, 2, 3], 12)
