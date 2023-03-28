@@ -1,3 +1,7 @@
+import re
+
+import numpy as np
+
 import servant
 
 import openpyxl
@@ -6,6 +10,34 @@ from openpyxl.utils import column_index_from_string
 from pathlib import Path
 import pandas as pd
 
+pd.set_option('display.max_rows', 100)
+
+
+def make_df(filename, sheetname, rows_to_skip, use_cols, nrows):
+    df = pd.read_excel(
+        filename,
+        sheet_name=sheetname,
+        header=None,
+        skiprows=rows_to_skip,
+        usecols=use_cols,
+        nrows=nrows - rows_to_skip - 1,
+        index_col=None
+    )
+    # Update the names of columns and add unique number to columns with the same name
+    column_names = []
+    count_dict = {}
+    for column_name in df.iloc[0].str.replace(r'\s+', ' ', regex=True):
+        if column_name in count_dict:
+            count_dict[column_name] += 1
+            column_names.append(column_name + '_' + str(count_dict[column_name]))
+        else:
+            count_dict[column_name] = 1
+            column_names.append(column_name)
+    df.columns = column_names
+    #
+    df = df.drop([0])
+    return df
+
 
 class Inspector:
     def __init__(self, up_spreadsheet, lo_spreadsheet):
@@ -13,6 +45,8 @@ class Inspector:
         self.file_lo = lo_spreadsheet
         self.wb_up, self.wb_lo = self.is_readable()
         self.q = self.quarter
+        self.df_up = self.load_df_up
+        self.df_lo = self.load_df_loc
 
     def is_readable(self):
         wb_up = openpyxl.load_workbook(self.file_up, data_only=True)
@@ -70,136 +104,98 @@ class Inspector:
             print(f'RUP: {rup}, RLO: {rlo}, difference: {rup - rlo}')
             return False
 
-    def get_refund_of_emp(self, row, month):
-        ws = self.wb_up.worksheets[1]
-        total = 0
+    def refund_for_month_up(self, month=0):
+        total = self.df_up.iloc[:, 11 + (month * 5):14 + (month * 5)].apply(pd.to_numeric, errors='coerce').sum()
+        return total.sum()
 
-        for i in range(3):
-            val = ws.cell(row, 12 + (month * 5) + i).value
-            if val:
-                total += val
-        return total
-
-    def sum_month_refund(self, month):
-        ws = self.wb_up.worksheets[1]
-
-        row = 13
-        total = 0
-
-        while True:
-            if not ws.cell(row, 2).value:
-                break
-
-            total += self.get_refund_of_emp(row, month)
-            row += 1
-        return total
-
-    @property
-    def sums_of_refunds(self):
-        months = [self.sum_month_refund(i) for i in range(3)]
-        return months
-
-    def refund_for_month_lo(self, month):
+    def refund_for_month_lo(self, month=0):
         month_index = self.q * 3 - 2 + month
-        ws = self.wb_lo.worksheets[-2]
-        return ws.cell(13, month_index + 1).value
-
-    @property
-    def sums_of_refunds_lo(self):
-        return [self.refund_for_month_lo(month) for month in range(3)]
+        total = self.df_lo[f'refundace{month_index}'].apply(pd.to_numeric, errors='coerce').sum()
+        return total
 
     @property
     def faulty_months(self):
         if not self.refund_are_equal():
             faulty_months = []
-            refunds_up = self.sums_of_refunds
-            refunds_lo = self.sums_of_refunds_lo
+            refunds_up = [self.refund_for_month_up(refund) for refund in range(3)]
+            refunds_lo = [self.refund_for_month_lo(refund) for refund in range(3)]
 
             for month_index, month in enumerate(zip(refunds_up, refunds_lo)):
                 if month[0] != month[1]:
                     faulty_months.append(month_index)
 
+            for month in faulty_months:
+                print(refunds_up[month], refunds_lo[month])
+
             return faulty_months
         return False
 
-    def get_month(self, month, sheet_num):
-        """ Gets month column index in local table from date in employee data object """
-        # Counter for keeping track of curent column index
-        counter = 0
-        # Number of how many times merged cell was found
-        m = 0
-        month_num = self.q * 3 - 2 + month
-        cell = False
-
-        while True:
-            if m == month_num:
-                return cell.column
-
-            cell = self.wb_lo.worksheets[sheet_num].cell(row=1, column=counter + 3)
-            counter += 1
-
-            if not type(cell).__name__ == 'MergedCell' and cell.value:
-                m += 1
-
     @property
-    def names_in_table(self):
-        ws = self.wb_up.worksheets[1]
-        names = {}
-
-        row = 13
-
-        while True:
-            name = ws.cell(row, 2).value
-            if not name:
-                break
-
-            names.setdefault(name, [])
-
-            for i in range(3):
-                total = self.get_refund_of_emp(row, i)
-                names[name].append(total)
-            row += 1
-        return names
-
-    def names_in_table_2(self):
-        wb = openpyxl.load_workbook('temp.xlsx', data_only=True, read_only=False)
-        sheets_df = []
+    def load_df_loc(self):
+        wb = openpyxl.load_workbook(self.file_lo, read_only=False, data_only=True)
+        sheetnames = wb.worksheets[:-4]
         table_indexes = [1, 2, 3, 4, 7, 8]
 
-        # Iterate over sheets
-        for sheetindex, ws in zip(table_indexes, wb.worksheets[:-4]):
-            headers = []
-            tab = ws.tables[f'Tabulka{sheetindex}']
+        sheet_dfs = []
+
+        for table_index, ws in zip(table_indexes, sheetnames):
+            tab = ws.tables[f'Tabulka{table_index}']
             table_range = tab.ref
-            data_rows = []
+            rows = int(re.search(r'\d*$', table_range).group())
 
-            header = False
+            columns = re.sub(r'\d', '', table_range)
 
-            for row in ws[table_range]:
-                data_cols = []
+            df = make_df(self.file_lo, ws.title, 1, columns, rows)
+            sheet_dfs.append(df)
 
-                for cell in row:
-                    if not header:
-                        headers.append(cell.value)
-                    else:
-                        data_cols.append(cell.value)
+        big_df = pd.concat([*sheet_dfs], ignore_index=True).sort_values('Jméno')
+        big_df.dropna(subset=['Jméno'], inplace=True)
+        big_df['idx'] = range(1, len(big_df) + 1)
+        big_df.set_index('idx', inplace=True)
+        return big_df
 
-                if not header:
-                    header = True
-                    continue
+    @property
+    def load_df_up(self):
+        ws = self.wb_up.worksheets[1]
+        sheet_name = ws.title
+        row = 13
 
-                data_rows.append(data_cols)
+        # Get last line
+        while True:
+            if not ws.cell(row, 2).value:
+                break
+            row += 1
 
-            df = pd.DataFrame(data_rows, columns=headers, index=None)
-            print(df[['Jméno', 'refundace7']])
+        df = make_df(self.file_up, sheet_name, 11, 'A:X', row)
+
+        df['refundace0'] = df.iloc[:, 11:14].apply(pd.to_numeric, errors='coerce').sum(axis=1)
+        df['refundace1'] = df.iloc[:, 16:19].apply(pd.to_numeric, errors='coerce').sum(axis=1)
+        df['refundace2'] = df.iloc[:, 21:24].apply(pd.to_numeric, errors='coerce').sum(axis=1)
+        df['jmeno'] = df['Příjmení'] + ' ' + df['Jméno']
+        df['idx'] = range(1, len(df) + 1)
+        df.set_index('idx', inplace=True)
+        return df
+
+    def combined(self):
+        merged_df = pd.merge(self.df_lo[['Jméno', 'refundace7', 'refundace8', 'refundace9']],
+                             self.df_up[['jmeno', 'refundace0', 'refundace1', 'refundace2']]
+                             , left_on='Jméno', right_on='jmeno', how='outer').replace(0, np.NAN)
+        return merged_df
 
 
 file_up = 'temp-up.xlsx'
 file_lo = 'temp.xlsx'
 
-
 if all((Path(file_up).exists(), Path(file_lo).exists())):
     inspector = Inspector(file_up, file_lo)
-    inspector.names_in_table_2()
+    # print(inspector.faulty_months)
+    # print(inspector.df_up[['Příjmení', 'refundace0', 'refundace1', 'refundace2']])
+    # print()
+    # print(inspector.df_up.columns)
+    # print(inspector.df_lo['Jméno'])
+    # print(inspector.df_up['jmeno'])
+    print(inspector.combined())
+    # print(inspector.df_lo.columns)
+    # print(inspector.df_lo['Jméno'].isin(inspector.df_up['jmeno']), inspector.df_lo['Jméno'], inspector.df_up['jmeno'])
 else:
     print('File does not exist')

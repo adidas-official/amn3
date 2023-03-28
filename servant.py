@@ -52,7 +52,7 @@ def get_q(dataframe):
 
 def unlock(filename, password=None, data_only=False):
     try:
-        wb = openpyxl.load_workbook(filename, password, data_only=data_only)
+        wb = openpyxl.load_workbook(filename, data_only=data_only, read_only=False)
         return wb
     except zipfile.BadZipFile:
         pass
@@ -64,7 +64,7 @@ def unlock(filename, password=None, data_only=False):
                 office_file.load_key(password=password)
             decrypted_wb = BytesIO()
             office_file.decrypt(decrypted_wb)
-            wb = openpyxl.load_workbook(decrypted_wb, data_only=data_only)
+            wb = openpyxl.load_workbook(decrypted_wb, data_only=data_only, read_only=False)
             return wb
     except (msoffcrypto.exceptions.FileFormatError, ValueError):
         pass
