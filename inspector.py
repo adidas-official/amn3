@@ -9,6 +9,7 @@ from openpyxl.utils import column_index_from_string
 
 from pathlib import Path
 import pandas as pd
+import platform
 
 pd.set_option('display.max_rows', 100)
 
@@ -49,18 +50,31 @@ class Inspector:
         self.df_lo = self.load_df_loc
 
     def is_readable(self):
+        ''' 
+        TODO
+        check if libreoffice or ms office is installed.
+        ''' 
+
         wb_up = openpyxl.load_workbook(self.file_up, data_only=True)
         ws = wb_up.worksheets[0]
 
         if ws.cell(21, 7).value is None:
-            servant.resave_xlsx(self.file_up)
+            if platform.system() == 'Windows':
+                servant.saveas_excel(self.file_up)
+            else:
+                servant.saveas_libreoffice(self.file_up)
+            
             wb_up = openpyxl.load_workbook(self.file_up, data_only=True)
 
         wb_lo = servant.unlock(self.file_lo, '13881744', data_only=True)
         ws = wb_lo.worksheets[-2]
 
         if ws.cell(3, 2).value is None:
-            servant.resave_xlsx(self.file_lo)
+            if platform.system() == 'Windows':
+                servant.saveas_excel(self.file_lo)
+            else:
+                servant.saveas_libreoffice(self.file_lo)
+
             wb_lo = servant.unlock(self.file_lo, '13881744', data_only=True)
 
         return wb_up, wb_lo

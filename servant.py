@@ -13,6 +13,8 @@ from openpyxl.utils import get_column_letter
 
 from copy import copy
 from shutil import which
+from pathlib import Path
+import win32com as win32
 
 mapping = [
     {
@@ -254,16 +256,12 @@ def is_tool(name):
     return which(name) is not None
 
 
-def resave_xlsx(file):
+def saveas_libreoffice(file):
 
     if is_tool('libreoffice'):
         xlsx_tool = 'libreoffice'
-    elif is_tool('ms excel'):
-        xlsx_tool = 'ms excel'
-    elif is_tool('openoffice'):
-        xlsx_tool = 'openoffice'
     else:
-        print('No xlsx processor installed. Please install MS Excel, LibreOffice or OpenOffice')
+        print('LibreOffice is not installed.')
         return 0
 
     # Open xlsx editing software
@@ -291,6 +289,19 @@ def resave_xlsx(file):
     pyautogui.hotkey('alt', 'f4')
     time.sleep(0.5)
 
+
+def saveas_excel(filename):
+
+    try:
+        excel = win32.gencache.EnsureDispatch('Excel.Application')
+        excel.Visible = False
+
+        wb = excel.Workbooks.Open(Path(filename))
+        wb.Close(True)
+
+        excel.Application.Quit()
+    except:
+        print('There is no excel installed.')
 
 # update_f('odměna', [1, 2, 3, 4, 7, 8, 9, 11], 11)
 # update_f('str.', [1, 2, 3], 12)
