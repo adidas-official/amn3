@@ -14,7 +14,10 @@ from openpyxl.utils import get_column_letter
 from copy import copy
 from shutil import which
 from pathlib import Path
-import win32com as win32
+import platform
+
+if platform.system() == 'Windows':
+    import win32com as win32
 
 mapping = [
     {

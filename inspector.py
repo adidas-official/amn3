@@ -1,9 +1,6 @@
 import re
-
 import numpy as np
-
 import servant
-
 import openpyxl
 from openpyxl.utils import column_index_from_string
 
@@ -12,6 +9,7 @@ import pandas as pd
 import platform
 
 pd.set_option('display.max_rows', 100)
+# pd.set_option('display.max_columns', 20)
 
 
 def make_df(filename, sheetname, rows_to_skip, use_cols, nrows):
@@ -108,7 +106,7 @@ class Inspector:
             print(f'Quarter is not integer type. Fix the value in {self.file_up} in cell D6')
             return False
 
-    def refund_are_equal(self):
+    def refunds_are_equal(self):
         rup = self.refund_up
         rlo = self.refund_lo
         if rup == rlo:
@@ -129,7 +127,7 @@ class Inspector:
 
     @property
     def faulty_months(self):
-        if not self.refund_are_equal():
+        if not self.refunds_are_equal():
             faulty_months = []
             refunds_up = [self.refund_for_month_up(refund) for refund in range(3)]
             refunds_lo = [self.refund_for_month_lo(refund) for refund in range(3)]
@@ -190,11 +188,20 @@ class Inspector:
         df.set_index('idx', inplace=True)
         return df
 
+    @property
     def combined(self):
         merged_df = pd.merge(self.df_lo[['Jméno', 'refundace7', 'refundace8', 'refundace9']],
                              self.df_up[['jmeno', 'refundace0', 'refundace1', 'refundace2']]
-                             , left_on='Jméno', right_on='jmeno', how='outer').replace(0, np.NAN)
+                             , left_on='Jméno', right_on='jmeno', how='outer').replace(np.NAN, 0)
         return merged_df
+
+    def check_faulty_months(self):
+        combined = self.combined
+        for month in self.faulty_months:
+            print(month)
+            is_not_equal = combined.iloc[:, 1 + month] != combined.iloc[:, 5 + month]
+            values = combined.loc[is_not_equal, combined.columns[[0, 1 + month, 5 + month]]]
+            print(values)
 
 
 file_up = 'temp-up.xlsx'
@@ -208,7 +215,8 @@ if all((Path(file_up).exists(), Path(file_lo).exists())):
     # print(inspector.df_up.columns)
     # print(inspector.df_lo['Jméno'])
     # print(inspector.df_up['jmeno'])
-    print(inspector.combined())
+    # print(inspector.combined)
+    print(inspector.check_faulty_months())
     # print(inspector.df_lo.columns)
     # print(inspector.df_lo['Jméno'].isin(inspector.df_up['jmeno']), inspector.df_lo['Jméno'], inspector.df_up['jmeno'])
 else:
