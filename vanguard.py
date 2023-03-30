@@ -101,7 +101,7 @@ class Scout:
             row = 3
             sheet_names = {}
             while True:
-                name = ws.cell(row, 2).value
+                name = str(ws.cell(row, 2).value)[:20]
                 if name == '[ENDBLOCK]':
                     break
 

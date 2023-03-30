@@ -156,7 +156,7 @@ class Enforcer:
         # print(names_in_xlsx.difference(data_for_month))
         # print(self.get_last_rows())
         # print('New people')
-        return [self.merged_lo[name] for name in data_for_month.difference(names_in_xlsx)]
+        return [self.merged_lo[name[:20]] for name in data_for_month.difference(names_in_xlsx)]
 
     def display_new_emps(self):
         print('New people bellow')
