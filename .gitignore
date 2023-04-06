@@ -3,3 +3,10 @@ __pycache__/
 tables/*.xlsx#
 temp*.xlsx
 amn3.code-workspace
+db.sqlite3
+*.pyc
+*.pyo
+staticfiles/
+settings/local.py
+
+    
