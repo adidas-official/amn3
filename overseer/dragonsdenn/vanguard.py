@@ -2,6 +2,8 @@ import pandas as pd
 import servant
 import openpyxl
 import openpyxl.utils
+import paths
+from pathlib import Path
 
 
 class Assembler:
@@ -35,7 +37,7 @@ class Assembler:
         merged_lists = (servant.from_df_to_dict(self.dataframe, True, 'RodCislo'),
                         servant.from_df_to_dict(self.dataframe, False, 'JmenoS'))
 
-        scout = Scout('tables/jmenny_seznam_2022_09_27 Fiala.xlsx', 'tables/Mzdové náklady 2023.xlsx')
+        scout = Scout(Path(paths.TABLES_PATH) / 'jmenny_seznam_2022_09_27 Fiala.xlsx', Path(paths.TABLES_PATH) / 'Mzdové náklady 2023.xlsx')
 
         employee_lists = (scout.employee_list_up(), scout.employee_list_lo())
 

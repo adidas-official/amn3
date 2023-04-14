@@ -8,5 +8,6 @@ db.sqlite3
 *.pyo
 staticfiles/
 settings/local.py
+.vscode
 
     

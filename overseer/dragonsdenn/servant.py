@@ -15,9 +15,21 @@ from copy import copy
 from shutil import which
 from pathlib import Path
 import platform
+import paths
+import os
 
+# if on windows import win32com
 if platform.system() == 'Windows':
-    import win32com as win32
+    try:
+        import win32com as win32 # type: ignore
+    except ImportError:
+        print('win32com is not installed. Please install it to use this script.')
+        win32 = None
+        exit()
+else:
+    win32 = None
+
+# import win32com.client as win32 only if on windows
 
 mapping = [
     {
@@ -125,7 +137,7 @@ def get_month(month) -> str:
 
 
 def get_ins_code(code):
-    with open('insurance/Fiala_insurance_codes.csv', 'r') as f:
+    with open(Path(paths.INSURANCE_PATH) / 'Fiala_insurance_codes.csv', 'r') as f:
         codes = csv.reader(f)
         data = dict(codes)
         data = {clean(k): clean(v) for k, v in data.items()}
@@ -266,6 +278,10 @@ def saveas_libreoffice(file):
     else:
         print('LibreOffice is not installed.')
         return 0
+
+    # check if GTK_PATH is set, if yes, unset it
+    if 'GTK_PATH' in os.environ:
+        del os.environ['GTK_PATH']
 
     # Open xlsx editing software
     cmd = [xlsx_tool, file]

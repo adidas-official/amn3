@@ -2,6 +2,8 @@ from itertools import chain
 from datetime import datetime
 
 import servant
+import paths
+from pathlib import Path
 from vanguard import Assembler
 from servant import mapping, column_map, split_name
 from openpyxl.utils import get_column_letter
@@ -20,7 +22,6 @@ def to_list(idnum, items, row_num, num):
 
 
 def write_to_list(idnum, items, row_num, worksheet, new=False):
-    # print(items)
     if worksheet.title.startswith('2'):
         num = 0
         offset = 1
@@ -79,6 +80,14 @@ class Enforcer:
         self.x = dataset[-2]
         self.last_row = [row[1] + 1 for row in self.x.range]
         self.quarter = dataset[-1]
+    
+    # make a function that makes a directory called '.amn' in home if it doesn't exist
+    def make_home_dir(self):
+        home_dir = Path.home()
+        amn_dir = home_dir / '.amn'
+        if not amn_dir.exists():
+            amn_dir.mkdir()
+        return amn_dir
 
     def display_data(self):
         for person, data in self.merged_up.items():
@@ -120,6 +129,7 @@ class Enforcer:
                     print(message)
 
     def write_data_lo(self):
+        outdir = Path(self.make_home_dir())
         wb = self.x.wb_lo
         self.write_new_emps(wb)
         for person, data in self.merged_lo.items():
@@ -143,7 +153,7 @@ class Enforcer:
                         if money["Fare"]:
                             message += f', {fare_letter}{sheet_data[person]}: {money["Fare"]}'
                             ws.cell(sheet_data[person], fare_col).value = money["Fare"]
-        wb.save('temp.xlsx')
+        wb.save(outdir / 'temp.xlsx')
 
     def get_new_emps(self):
         # merged_lo is dictionary with all data for each employee
@@ -210,6 +220,7 @@ class Enforcer:
             last_lines[sheet_index] += 1
 
     def write_data(self):
+        outdir = Path(self.make_home_dir())
         wb = self.x.wb_up
         ws = wb.worksheets[0]
         ws.cell(6, 4).value = self.quarter
@@ -239,14 +250,14 @@ class Enforcer:
                     self.last_row[1] += 1
                     # message += 'belongs to list3'
                 # print(message)
-        wb.save('temp-up.xlsx')
+        wb.save(outdir / 'temp-up.xlsx')
 
     def get_last_rows(self):
         last_rows = [self.x.last_row_lo(i) for i in range(8)]
         return last_rows
 
 
-vanguard = Assembler(file_mzdy='data/Q2.CSV', file_pracov='data/PRACOVQ2.CSV')
+vanguard = Assembler(file_mzdy=Path(paths.DATA_PATH) / 'Q2.CSV', file_pracov=Path(paths.DATA_PATH) / 'PRACOVQ2.CSV')
 enforcer = Enforcer(vanguard.loader)
 # enforcer.display_data()
 # enforcer.display_lo()

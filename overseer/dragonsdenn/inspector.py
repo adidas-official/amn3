@@ -7,9 +7,9 @@ from openpyxl.utils import column_index_from_string
 from pathlib import Path
 import pandas as pd
 import platform
+import paths
 
 pd.set_option('display.max_rows', 100)
-# pd.set_option('display.max_columns', 20)
 
 
 def make_df(filename, sheetname, rows_to_skip, use_cols, nrows):
@@ -204,8 +204,8 @@ class Inspector:
             print(values)
 
 
-file_up = 'temp-up.xlsx'
-file_lo = 'temp.xlsx'
+file_up = Path.home() / '.amn/temp-up.xlsx'
+file_lo = Path.home() / '.amn/temp.xlsx'
 
 if all((Path(file_up).exists(), Path(file_lo).exists())):
     inspector = Inspector(file_up, file_lo)
