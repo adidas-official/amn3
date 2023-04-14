@@ -1,11 +1,11 @@
 from itertools import chain
 from datetime import datetime
 
-import servant
-import paths
+from . import servant
+from . import paths
 from pathlib import Path
-from vanguard import Assembler
-from servant import mapping, column_map, split_name
+from .vanguard import Assembler
+from .servant import mapping, column_map, split_name
 from openpyxl.utils import get_column_letter
 
 
@@ -171,7 +171,7 @@ class Enforcer:
     def display_new_emps(self):
         print('New people bellow')
         last_lines = self.get_last_rows()
-        for emp in enforcer.get_new_emps():
+        for emp in self.get_new_emps():
             sheet_index = servant.get_sheet_by_emp_data(emp['Code'], emp['Cat'])
             last_lines[sheet_index] += 1
             if sheet_index < 3:
@@ -194,7 +194,7 @@ class Enforcer:
     def write_new_emps(self, wb):
         last_lines = self.get_last_rows()
 
-        for emp in enforcer.get_new_emps():
+        for emp in self.get_new_emps():
             sheet_index = servant.get_sheet_by_emp_data(emp['Code'], emp['Cat'])
 
             ws = wb.worksheets[sheet_index]
@@ -256,11 +256,12 @@ class Enforcer:
         last_rows = [self.x.last_row_lo(i) for i in range(8)]
         return last_rows
 
+def main():
 
-vanguard = Assembler(file_mzdy=Path(paths.DATA_PATH) / 'Q2.CSV', file_pracov=Path(paths.DATA_PATH) / 'PRACOVQ2.CSV')
-enforcer = Enforcer(vanguard.loader)
-# enforcer.display_data()
-# enforcer.display_lo()
-# enforcer.display_new_emps()
-enforcer.write_data()
-enforcer.write_data_lo()
+    vanguard = Assembler(file_mzdy=Path(paths.DATA_PATH) / 'Q2.CSV', file_pracov=Path(paths.DATA_PATH) / 'PRACOVQ2.CSV')
+    enforcer = Enforcer(vanguard.loader)
+    # enforcer.display_data()
+    # enforcer.display_lo()
+    # enforcer.display_new_emps()
+    enforcer.write_data()
+    enforcer.write_data_lo()

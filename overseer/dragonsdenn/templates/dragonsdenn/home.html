@@ -1,0 +1,39 @@
+<DOCTYPE html>
+<html>
+<head>
+    <title>Home</title>
+</head>
+<body>
+    <h1>Automatizace Mzdových Nákladů</h1>
+    <hr>
+    <button id="run-enforcer">Enforce</button>
+    <button id="run-inspector">Inspect</button>
+</body>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $('#run-enforcer').click(function() {
+        $.ajax({
+            url: '{% url "run_enforcer" %}',
+            type: 'GET',
+            success: function(response) {
+                alert('Enforcer executed successfully!');
+            },
+            error: function(response) {
+                alert('Error executing script!');
+            }
+        });
+    });
+    $('#run-inspector').click(function() {
+        $.ajax({
+            url: '{% url "run_inspector" %}',
+            type: 'GET',
+            success: function(response) {
+                alert('Inspector executed successfully!');
+            },
+            error: function(response) {
+                alert('Error executing script!');
+            }
+        });
+    });
+</script>
+</html>

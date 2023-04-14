@@ -15,7 +15,7 @@ from copy import copy
 from shutil import which
 from pathlib import Path
 import platform
-import paths
+from . import paths
 import os
 
 # if on windows import win32com

@@ -1,8 +1,8 @@
 import pandas as pd
-import servant
+from . import servant
 import openpyxl
 import openpyxl.utils
-import paths
+from . import paths
 from pathlib import Path
 
 

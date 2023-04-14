@@ -1,13 +1,12 @@
 import re
 import numpy as np
-import servant
+from . import servant
 import openpyxl
 from openpyxl.utils import column_index_from_string
 
 from pathlib import Path
 import pandas as pd
 import platform
-import paths
 
 pd.set_option('display.max_rows', 100)
 
@@ -204,20 +203,21 @@ class Inspector:
             print(values)
 
 
-file_up = Path.home() / '.amn/temp-up.xlsx'
-file_lo = Path.home() / '.amn/temp.xlsx'
+def main():
+    file_up = Path.home() / '.amn/temp-up.xlsx'
+    file_lo = Path.home() / '.amn/temp.xlsx'
 
-if all((Path(file_up).exists(), Path(file_lo).exists())):
-    inspector = Inspector(file_up, file_lo)
-    # print(inspector.faulty_months)
-    # print(inspector.df_up[['Příjmení', 'refundace0', 'refundace1', 'refundace2']])
-    # print()
-    # print(inspector.df_up.columns)
-    # print(inspector.df_lo['Jméno'])
-    # print(inspector.df_up['jmeno'])
-    # print(inspector.combined)
-    print(inspector.check_faulty_months())
-    # print(inspector.df_lo.columns)
-    # print(inspector.df_lo['Jméno'].isin(inspector.df_up['jmeno']), inspector.df_lo['Jméno'], inspector.df_up['jmeno'])
-else:
-    print('File does not exist')
+    if all((Path(file_up).exists(), Path(file_lo).exists())):
+        inspector = Inspector(file_up, file_lo)
+        # print(inspector.faulty_months)
+        # print(inspector.df_up[['Příjmení', 'refundace0', 'refundace1', 'refundace2']])
+        # print()
+        # print(inspector.df_up.columns)
+        # print(inspector.df_lo['Jméno'])
+        # print(inspector.df_up['jmeno'])
+        # print(inspector.combined)
+        inspector.check_faulty_months()
+        # print(inspector.df_lo.columns)
+        # print(inspector.df_lo['Jméno'].isin(inspector.df_up['jmeno']), inspector.df_lo['Jméno'], inspector.df_up['jmeno'])
+    else:
+        print('File does not exist')
