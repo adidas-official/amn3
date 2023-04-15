@@ -6,34 +6,59 @@
 <body>
     <h1>Automatizace Mzdových Nákladů</h1>
     <hr>
-    <button id="run-enforcer">Enforce</button>
-    <button id="run-inspector">Inspect</button>
+    <div>
+        <form id="run-form" enctype="multipart/form-data">
+            {% csrf_token %}
+            <p>
+                <label for="wages">Wages</label>
+                <input id="wages" name="wages" type="file">
+                <br>
+                <label for="employees">Employees</label>
+                <input id="empoyees" name="employees" type="file">
+            </p>
+            <p>
+                <button id="run-enforcer">Enforce</button>
+                <button id="run-inspector">Inspect</button>
+            </p>
+        </form>
+    </div>
+    <br>
+    <a href="">mzdy</a>
+    <div>
+
+    </div>
 </body>
+<!-- -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    $('#run-enforcer').click(function() {
-        $.ajax({
-            url: '{% url "run_enforcer" %}',
-            type: 'GET',
-            success: function(response) {
-                alert('Enforcer executed successfully!');
-            },
-            error: function(response) {
-                alert('Error executing script!');
-            }
-        });
-    });
-    $('#run-inspector').click(function() {
-        $.ajax({
-            url: '{% url "run_inspector" %}',
-            type: 'GET',
-            success: function(response) {
-                alert('Inspector executed successfully!');
-            },
-            error: function(response) {
-                alert('Error executing script!');
-            }
-        });
-    });
+    $('#run-enforcer').click(function(e) {
+        e.preventDefault();
+        // var form = document.getElementById('run-form');
+        var form = $('#run-form');
+        console.log(form);
+        var formData = new FormData(form);
+        var file = $('#wages').files[0];
+
+        // Read the contents of the file
+        const reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = function() {
+            $.ajax({
+                url: '{% url "run_enforcer" %}',
+                type: 'POST',
+                data: formData,
+                success: function(data) {
+                    alert(data);
+                },
+                error: function(data) {
+                    alert(data);
+                },
+                cache: false,
+                contentType: false,
+                processData: false
+            });
+        };
+
+    });   
 </script>
 </html>
