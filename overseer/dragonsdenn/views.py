@@ -30,10 +30,7 @@ def run_enforcer(request):
 
 def run_inspector(request):
     if request.method == 'POST':
-        wages = request.FILES.get('wages')
-        employees = request.FILES.get('employees')
-        # do something with the files
-        inspector.main(wages, employees)
+        inspector.main()
         # return a JSON response to the front-end
         response_data = {'message': 'Enforcer has run successfully!'}
         return JsonResponse(response_data)

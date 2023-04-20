@@ -2,23 +2,9 @@ from itertools import chain
 from datetime import datetime
 
 from . import servant
-from . import paths
 from pathlib import Path
 from .vanguard import Assembler
-from .servant import mapping, column_map, split_name
 from openpyxl.utils import get_column_letter
-
-
-def to_list(idnum, items, row_num, num):
-    message = f'{idnum} {items["Name"]} is in sheet{num} row #{row_num}.'
-    for month, payout_data in items["Date"].items():
-        m = (int(month.split('.')[0]) + 2) % 3
-
-        month_col = mapping[num-2][m]
-
-        message += f'\n-Payout for month {month}: {payout_data["Payout"]}=>{month_col}{row_num}'
-
-    print(message)
 
 
 def write_to_list(idnum, items, row_num, worksheet, new=False):
@@ -33,21 +19,21 @@ def write_to_list(idnum, items, row_num, worksheet, new=False):
         m = (int(month.split('.')[0]) + 2) % 3
         shift = 14 - m
         if items["PensionType"]:
-            month_col_status = column_map[num][m]
+            month_col_status = servant.column_map[num][m]
             worksheet.cell(row_num, month_col_status).value = items["PensionType"]
 
-        month_col_payout = column_map[num][m] + offset
+        month_col_payout = servant.column_map[num][m] + offset
         worksheet.cell(row_num, month_col_payout).value = payout_data["Payout"]
         if payout_data["Payout"] > 0:
-            worksheet.cell(row_num, month_col_payout + shift).value = f'=14200-' \
+            worksheet.cell(row_num, month_col_payout + shift).value = f'=IF({month_col_payout}<>"";14200-' \
                                                                       f'{get_column_letter(month_col_payout + 1)}' \
-                                                                      f'{row_num}'
+                                                                      f'{row_num};0)'
 
         if num == 0:
             worksheet.cell(row_num, 6).value = items["EndEmployment"]
 
         if new:
-            lastname, firstname = split_name(items["Name"])
+            lastname, firstname = servant.split_name(items["Name"])
             worksheet.cell(row_num, 2).value = lastname
             worksheet.cell(row_num, 3).value = firstname
             if num == 0:
@@ -89,45 +75,6 @@ class Enforcer:
             amn_dir.mkdir()
         return amn_dir
 
-    def display_data(self):
-        for person, data in self.merged_up.items():
-            if person in self.data_up[0]:
-                to_list(person, data, self.data_up[0][person], 2)
-            elif person in self.data_up[1]:
-                to_list(person, data, self.data_up[1][person], 3)
-            else:
-                print(f'{person} {data["Name"]} is new')
-                if data['PensionType'] != '':
-                    to_list(person, data, self.last_row[0], 2)
-                    self.last_row[0] += 1
-                    # message += 'belongs to list2'
-                else:
-                    to_list(person, data, self.last_row[1], 3)
-                    self.last_row[1] += 1
-                    # message += 'belongs to list3'
-                # print(message)
-
-    def display_lo(self):
-        for person, data in self.merged_lo.items():
-            for i, sheet_data in enumerate(self.data_lo):
-                if i < 3:
-                    fare_shift = 4
-                else:
-                    fare_shift = 2
-
-                if person in sheet_data:
-                    # print(i, data, sheet_data[person])
-                    message = f'Sheet: {i}, Line: {sheet_data[person]}, Person: {person}, {data["Code"]}, {data["Cat"]}'
-                    for date, money in data['Date'].items():
-                        col = self.x.get_month(date, i)
-                        fare_col = col + fare_shift
-                        col_letter = get_column_letter(col)
-                        fare_letter = get_column_letter(fare_col)
-                        message += f'\n- {col_letter}{sheet_data[person]}: {money["Payout"]}'
-                        if money["Fare"]:
-                            message += f', {fare_letter}{sheet_data[person]}: {money["Fare"]}'
-                    print(message)
-
     def write_data_lo(self):
         outdir = Path(self.make_home_dir())
         wb = self.x.wb_lo
@@ -167,29 +114,6 @@ class Enforcer:
         # print(self.get_last_rows())
         # print('New people')
         return [self.merged_lo[name[:20]] for name in data_for_month.difference(names_in_xlsx)]
-
-    def display_new_emps(self):
-        print('New people bellow')
-        last_lines = self.get_last_rows()
-        for emp in self.get_new_emps():
-            sheet_index = servant.get_sheet_by_emp_data(emp['Code'], emp['Cat'])
-            last_lines[sheet_index] += 1
-            if sheet_index < 3:
-                fare_shift = 4
-            else:
-                fare_shift = 2
-
-            message = f'Sheet: {sheet_index}, Line: {last_lines[sheet_index]}, Person: {emp["Name"]}, ' \
-                      f'{emp["Code"]}, {emp["Cat"]}'
-            for date, money in emp['Date'].items():
-                col = self.x.get_month(date, sheet_index)
-                fare_col = col + fare_shift
-                col_letter = get_column_letter(col)
-                fare_letter = get_column_letter(fare_col)
-                message += f'\n- {col_letter}{last_lines[sheet_index]}: {money["Payout"]}'
-                if money["Fare"]:
-                    message += f', {fare_letter}{last_lines[sheet_index]}: {money["Fare"]}'
-            print(message)
 
     def write_new_emps(self, wb):
         last_lines = self.get_last_rows()
@@ -239,12 +163,10 @@ class Enforcer:
                 # print(f'{person} {data["Name"]} is new')
                 if data['PensionType'] != '':
                     ws = wb.worksheets[1]
-                    # to_list(person, data, self.last_row[0], 2)
                     write_to_list(person, data, self.last_row[0], ws, new=True)
                     self.last_row[0] += 1
                     # message += 'belongs to list2'
                 else:
-                    # to_list(person, data, self.last_row[1], 3)
                     ws = wb.worksheets[2]
                     write_to_list(person, data, self.last_row[1], ws, new=True)
                     self.last_row[1] += 1
@@ -257,12 +179,12 @@ class Enforcer:
         return last_rows
 
 def main(wages, employees):
+    # if all ok, send success message
+    # raise exceptions if something goes wrong
+    # on exception, send error message
 
     vanguard = Assembler(data_mzdy=wages, data_pracov=employees)
     enforcer = Enforcer(vanguard.loader)
-    # enforcer.display_data()
-    # enforcer.display_lo()
-    # enforcer.display_new_emps()
     enforcer.write_data()
     enforcer.write_data_lo()
     return True

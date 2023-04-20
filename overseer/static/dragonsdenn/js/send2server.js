@@ -3,12 +3,19 @@ $(document).ready(function() {
         e.preventDefault();
 
         var csrftoken = $('[name=csrfmiddlewaretoken]').val();
-        sendData(csrftoken);
+        enforce(csrftoken);
+    });
+
+    $("#run-inspector").click(function(e) {
+        e.preventDefault();
+
+        var csrftoken = $('[name=csrfmiddlewaretoken]').val();
+        inspect(csrftoken);
     });
     
 });
 
-async function sendData(csrf_token) {
+async function enforce(csrf_token) {
 
     var form = document.getElementById('run-form');
     var formData = new FormData(form);
@@ -26,5 +33,20 @@ async function sendData(csrf_token) {
         console.log(data);
     } catch (error) {
         console.error(error);
+    }
+}
+
+async function inspect(csrf_token) {
+    try {
+        console.log('Requesting inspection');
+        const response = await fetch('/run-inspector/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrf_token
+            }
+        });
+        console.log('Inspection requested!');
+    } catch (error) {
+        console.log('Inspection failed!');
     }
 }
