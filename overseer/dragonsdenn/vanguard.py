@@ -4,12 +4,13 @@ import openpyxl
 import openpyxl.utils
 from . import paths
 from pathlib import Path
+from io import StringIO
 
 
 class Assembler:
-    def __init__(self, file_mzdy, file_pracov):
-        self.mzdy = file_mzdy
-        self.pracov = file_pracov
+    def __init__(self, data_mzdy, data_pracov):
+        self.mzdy = StringIO(data_mzdy)
+        self.pracov = StringIO(data_pracov)
         self.dataframe = self.prep_df
 
     @property

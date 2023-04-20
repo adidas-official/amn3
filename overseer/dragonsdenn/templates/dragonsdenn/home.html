@@ -1,7 +1,9 @@
-<DOCTYPE html>
 <html>
 <head>
     <title>Home</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    {% load static %}
+    <script type="text/javascript" src="{% static 'dragonsdenn/script.js' %}"></script>
 </head>
 <body>
     <h1>Automatizace Mzdových Nákladů</h1>
@@ -14,7 +16,7 @@
                 <input id="wages" name="wages" type="file">
                 <br>
                 <label for="employees">Employees</label>
-                <input id="empoyees" name="employees" type="file">
+                <input id="employees" name="employees" type="file">
             </p>
             <p>
                 <button id="run-enforcer">Enforce</button>
@@ -28,37 +30,4 @@
 
     </div>
 </body>
-<!-- -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $('#run-enforcer').click(function(e) {
-        e.preventDefault();
-        // var form = document.getElementById('run-form');
-        var form = $('#run-form');
-        console.log(form);
-        var formData = new FormData(form);
-        var file = $('#wages').files[0];
-
-        // Read the contents of the file
-        const reader = new FileReader();
-        reader.readAsText(file);
-        reader.onload = function() {
-            $.ajax({
-                url: '{% url "run_enforcer" %}',
-                type: 'POST',
-                data: formData,
-                success: function(data) {
-                    alert(data);
-                },
-                error: function(data) {
-                    alert(data);
-                },
-                cache: false,
-                contentType: false,
-                processData: false
-            });
-        };
-
-    });   
-</script>
 </html>

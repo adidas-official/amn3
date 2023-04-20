@@ -257,12 +257,12 @@ class Enforcer:
         return last_rows
 
 def main(wages, employees):
-    print(wages, employees)
 
-    vanguard = Assembler(file_mzdy=Path(paths.DATA_PATH) / 'Q2.CSV', file_pracov=Path(paths.DATA_PATH) / 'PRACOVQ2.CSV')
+    vanguard = Assembler(data_mzdy=wages, data_pracov=employees)
     enforcer = Enforcer(vanguard.loader)
     # enforcer.display_data()
     # enforcer.display_lo()
     # enforcer.display_new_emps()
     enforcer.write_data()
     enforcer.write_data_lo()
+    return True
