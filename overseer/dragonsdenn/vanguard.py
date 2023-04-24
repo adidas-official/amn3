@@ -18,7 +18,7 @@ class Assembler:
         self.dataframe = self.prep_df
 
     @property
-    def prep_df(self) -> pd.DataFrame:
+    def prep_df(self):
         """ Preparation of data to dictionary. Uses pandas library to open, sort and merge data from csvs."""
         logger.info('Preparing data.')
 
@@ -136,7 +136,7 @@ class Scout:
             s.append(spread)
         return s
 
-    def employee_list_lo(self) -> list:
+    def employee_list_lo(self):
         """ Returns list of people present on spreadsheet. Each sheet has its own dictionary with person:row kw pair"""
         people = []
         for ws in self.wb_lo.worksheets[:-2]:
@@ -155,7 +155,7 @@ class Scout:
 
         return people
 
-    def get_month(self, date, sheet_num) -> int:
+    def get_month(self, date, sheet_num):
         """ Gets month column index in local table from date in employee data object """
         # Counter for keeping track of curent column index
         counter = 0
@@ -166,7 +166,6 @@ class Scout:
         # If date is not in format 'M.YYYY' or 'M', return None
         try:
             month_num = int(date.split('.')[0])
-            logger.debug(f'get_month: {date} -> {month_num}')
         except IndexError:
             logger.error(f'IndexError in get_month. Date: {date}')
             return None

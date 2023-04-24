@@ -7,8 +7,7 @@ from openpyxl.utils import get_column_letter
 # Local imports
 from . import servant
 from .vanguard import Assembler
-from .logger import logger
-from .message_formater import message
+from .logger import logger, message as msg
 
 
 def write_to_list(idnum, items, row_num, worksheet, new=False) -> None:
@@ -64,21 +63,10 @@ def write_to_list(idnum, items, row_num, worksheet, new=False) -> None:
                 worksheet.cell(row_num, 6).value = 'PA'
                 worksheet.cell(row_num, 7).value = '100%'
 
-        data4message.setdefault(str(month), 134)
-    logger.debug(data4message)
+        data4message.setdefault(str(month), {'payout': payout_data["Payout"], "cell": get_column_letter(month_col_payout) + str(row_num)})
 
-    logger.info(message(items["Name", worksheet.title, data4message, new]))
+    logger.info(msg(items["Name"], 1, data4message, new))
     # logger.info(message)
-
-
-def new_person(idnum, items):
-    message = f'{idnum} {items["Name"]} is new and will be placed to list'
-    pen_t = items["PensionType"]
-    if pen_t:
-        message += ' 2'
-    else:
-        message += ' 3'
-    logger.info(message)
 
 
 class Enforcer:
@@ -100,6 +88,7 @@ class Enforcer:
 
     def write_data_lo(self) -> None:
         """Write employees' data to the LO file"""
+        logger.info("-" * 64)
         logger.info("Writing data to LO file")
         outdir = Path(self.make_home_dir())
         wb = self.scout.wb_lo
@@ -112,6 +101,7 @@ class Enforcer:
                     fare_shift = 2
 
                 if person in sheet_data:
+                    data4msg = {}
                     message = f'Sheet: {i}, Line: {sheet_data[person]}, Person: {person}, {data["Code"]}, {data["Cat"]}'
                     ws = wb.worksheets[i]
                     for date, money in data['Date'].items():
@@ -124,6 +114,8 @@ class Enforcer:
                         if money["Fare"]:
                             message += f', {fare_letter}{sheet_data[person]}: {money["Fare"]}'
                             ws.cell(sheet_data[person], fare_col).value = money["Fare"]
+                        data4msg.setdefault(str(date), {'payout': money["Payout"], "cell": get_column_letter(col) + str(sheet_data[person])})
+                        logger.info(msg(person, i, data4msg))
                     # logger.info(message)
         wb.save(outdir / 'temp.xlsx')
 
@@ -214,11 +206,8 @@ def main(wages, employees):
     # on exception, send error message
 
     logger.info('Starting')
-    try:
-        vanguard = Assembler(data_mzdy=wages, data_pracov=employees)
-        enforcer = Enforcer(vanguard.loader)
-        enforcer.write_data()
-        enforcer.write_data_lo()
-        logger.info('Done')
-    except Exception as e:
-        logger.error(f'Error: {e}')
+    vanguard = Assembler(data_mzdy=wages, data_pracov=employees)
+    enforcer = Enforcer(vanguard.loader)
+    enforcer.write_data()
+    enforcer.write_data_lo()
+    logger.info('Done')

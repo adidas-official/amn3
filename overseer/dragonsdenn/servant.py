@@ -29,8 +29,6 @@ if platform.system() == 'Windows':
 else:
     win32 = None
 
-# import win32com.client as win32 only if on windows
-
 mapping = [
     {
         0: 'J',
@@ -111,7 +109,7 @@ def split_name(name):
     return lastname, firstname
 
 
-def get_sheet_by_emp_data(workplace, emp_status):
+def get_sheet_by_emp_data(workplace, emp_status) -> int:
     if emp_status == 'DPP':
         return 6
     elif emp_status == 'U':
@@ -125,7 +123,8 @@ def get_sheet_by_emp_data(workplace, emp_status):
         'Prode': 2,
         'ÚP So': 3,
         'KÚ Ch': 4,
-        'KÚ': 5
+        'KÚ': 5,
+        '': 0
     }
 
     return workplaces[workplace]
