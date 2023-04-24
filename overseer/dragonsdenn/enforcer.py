@@ -1,13 +1,30 @@
+# Importing libraries
+from pathlib import Path
 from itertools import chain
 from datetime import datetime
-
-from . import servant
-from pathlib import Path
-from .vanguard import Assembler
 from openpyxl.utils import get_column_letter
 
+# Local imports
+from . import servant
+from .vanguard import Assembler
+from .logger import logger
+from .message_formater import message
 
-def write_to_list(idnum, items, row_num, worksheet, new=False):
+
+def write_to_list(idnum, items, row_num, worksheet, new=False) -> None:
+    """
+    Args:
+        idnum (str): The ID number of the servant.
+        items (dict): A dictionary of the servant's data.
+        row_num (int): The row number to add the data.
+        worksheet (Worksheet): The worksheet to add the data.
+        new (bool): Whether or not the servant is new.
+
+    Returns:
+        None
+    """
+    data4message = {}
+    # message = f"{idnum} - {items['Name']}"
     if worksheet.title.startswith('2'):
         num = 0
         offset = 1
@@ -25,7 +42,7 @@ def write_to_list(idnum, items, row_num, worksheet, new=False):
         month_col_payout = servant.column_map[num][m] + offset
         worksheet.cell(row_num, month_col_payout).value = payout_data["Payout"]
         if payout_data["Payout"] > 0:
-            worksheet.cell(row_num, month_col_payout + shift).value = f'=IF({month_col_payout}<>"";14200-' \
+            worksheet.cell(row_num, month_col_payout + shift).value = f'=IF({get_column_letter(month_col_payout)}{row_num}<>"";14200-' \
                                                                       f'{get_column_letter(month_col_payout + 1)}' \
                                                                       f'{row_num};0)'
 
@@ -47,6 +64,12 @@ def write_to_list(idnum, items, row_num, worksheet, new=False):
                 worksheet.cell(row_num, 6).value = 'PA'
                 worksheet.cell(row_num, 7).value = '100%'
 
+        data4message.setdefault(str(month), 134)
+    logger.debug(data4message)
+
+    logger.info(message(items["Name", worksheet.title, data4message, new]))
+    # logger.info(message)
+
 
 def new_person(idnum, items):
     message = f'{idnum} {items["Name"]} is new and will be placed to list'
@@ -55,6 +78,7 @@ def new_person(idnum, items):
         message += ' 2'
     else:
         message += ' 3'
+    logger.info(message)
 
 
 class Enforcer:
@@ -63,11 +87,10 @@ class Enforcer:
         self.data_lo = dataset[0][1]
         self.merged_up = dataset[1][0]
         self.merged_lo = dataset[1][1]
-        self.x = dataset[-2]
-        self.last_row = [row[1] + 1 for row in self.x.range]
+        self.scout = dataset[-2]
+        self.last_row = [row[1] + 1 for row in self.scout.range]
         self.quarter = dataset[-1]
     
-    # make a function that makes a directory called '.amn' in home if it doesn't exist
     def make_home_dir(self):
         home_dir = Path.home()
         amn_dir = home_dir / '.amn'
@@ -75,10 +98,12 @@ class Enforcer:
             amn_dir.mkdir()
         return amn_dir
 
-    def write_data_lo(self):
+    def write_data_lo(self) -> None:
+        """Write employees' data to the LO file"""
+        logger.info("Writing data to LO file")
         outdir = Path(self.make_home_dir())
-        wb = self.x.wb_lo
-        self.write_new_emps(wb)
+        wb = self.scout.wb_lo
+        self.write_new_emps_lo(wb)
         for person, data in self.merged_lo.items():
             for i, sheet_data in enumerate(self.data_lo):
                 if i < 3:
@@ -87,11 +112,10 @@ class Enforcer:
                     fare_shift = 2
 
                 if person in sheet_data:
-                    # print(i, data, sheet_data[person])
                     message = f'Sheet: {i}, Line: {sheet_data[person]}, Person: {person}, {data["Code"]}, {data["Cat"]}'
                     ws = wb.worksheets[i]
                     for date, money in data['Date'].items():
-                        col = self.x.get_month(date, i)
+                        col = self.scout.get_month(date, i)
                         fare_col = col + fare_shift
                         col_letter = get_column_letter(col)
                         fare_letter = get_column_letter(fare_col)
@@ -100,22 +124,16 @@ class Enforcer:
                         if money["Fare"]:
                             message += f', {fare_letter}{sheet_data[person]}: {money["Fare"]}'
                             ws.cell(sheet_data[person], fare_col).value = money["Fare"]
+                    # logger.info(message)
         wb.save(outdir / 'temp.xlsx')
 
-    def get_new_emps(self):
-        # merged_lo is dictionary with all data for each employee
-        # 'Arvensisová Radka': {'Name': 'Arvensisová Radka', 'Code': 'Prode',...
-        # data_lo is list of dictionaries with key:value pairs being 'name':'line_number' for each sheet
-        # [{'Bobok Vilém': 3, 'Cenefels Jan': 4, 'Dbalý Petr': 5, 'Diviak Miroslav': 6, ...
+    def get_new_emps(self) -> list:
         data_for_month = set(self.merged_lo.keys())
         names_in_xlsx = set(chain.from_iterable(d.keys() for d in self.data_lo))
-        # print('People without pay for this month')
-        # print(names_in_xlsx.difference(data_for_month))
-        # print(self.get_last_rows())
-        # print('New people')
         return [self.merged_lo[name[:20]] for name in data_for_month.difference(names_in_xlsx)]
 
-    def write_new_emps(self, wb):
+    def write_new_emps_lo(self, wb) -> None:
+        """ Write new employees to the LO file"""
         last_lines = self.get_last_rows()
 
         for emp in self.get_new_emps():
@@ -124,10 +142,14 @@ class Enforcer:
             ws = wb.worksheets[sheet_index]
             servant.insert_row(ws, last_lines[sheet_index] + 1)
             ws.cell(last_lines[sheet_index] + 1, 2).value = emp["Name"]
+            message = f'New person: {emp["Name"]}, sheet: {sheet_index}, line: {last_lines[sheet_index] + 1}'
+            fare = 0
 
             if emp["PensionType"]:
+                pension = "With pension"
                 ws.cell(last_lines[sheet_index] + 1, 1).value = 1
             else:
+                pension = "without pension"
                 ws.cell(last_lines[sheet_index] + 1, 1).value = 0
 
             if sheet_index < 3:
@@ -136,16 +158,25 @@ class Enforcer:
                 fare_shift = 2
 
             for date, money in emp['Date'].items():
-                col = self.x.get_month(date, sheet_index)
+                col = self.scout.get_month(date, sheet_index)
                 fare_col = col + fare_shift
+
                 ws.cell(last_lines[sheet_index] + 1, col).value = money["Payout"]
+
                 if money["Fare"]:
+                    fare = money["Fare"]
                     ws.cell(last_lines[sheet_index] + 1, fare_col).value = money["Fare"]
+                message += f'- Month: {date}, Payout: {money["Payout"]}, Fare: {fare}, {pension}'
+                # logger.info(message)
+
             last_lines[sheet_index] += 1
 
-    def write_data(self):
+    def write_data(self) -> None:
+        """Write employees' data to the UP file, including filling new employees"""
+
+        logger.info('Writing data to UP file')
         outdir = Path(self.make_home_dir())
-        wb = self.x.wb_up
+        wb = self.scout.wb_up
         ws = wb.worksheets[0]
         ws.cell(6, 4).value = self.quarter
         ws.cell(6, 9).value = datetime.now().year
@@ -160,7 +191,7 @@ class Enforcer:
                 ws = wb.worksheets[2]
                 write_to_list(person, data, self.data_up[1][person], ws)
             else:
-                # print(f'{person} {data["Name"]} is new')
+                # logger.info(f'{person} {data["Name"]} is new')
                 if data['PensionType'] != '':
                     ws = wb.worksheets[1]
                     write_to_list(person, data, self.last_row[0], ws, new=True)
@@ -171,11 +202,10 @@ class Enforcer:
                     write_to_list(person, data, self.last_row[1], ws, new=True)
                     self.last_row[1] += 1
                     # message += 'belongs to list3'
-                # print(message)
         wb.save(outdir / 'temp-up.xlsx')
 
-    def get_last_rows(self):
-        last_rows = [self.x.last_row_lo(i) for i in range(8)]
+    def get_last_rows(self) -> list:
+        last_rows = [self.scout.last_row_lo(i) for i in range(8)]
         return last_rows
 
 def main(wages, employees):
@@ -183,8 +213,12 @@ def main(wages, employees):
     # raise exceptions if something goes wrong
     # on exception, send error message
 
-    vanguard = Assembler(data_mzdy=wages, data_pracov=employees)
-    enforcer = Enforcer(vanguard.loader)
-    enforcer.write_data()
-    enforcer.write_data_lo()
-    return True
+    logger.info('Starting')
+    try:
+        vanguard = Assembler(data_mzdy=wages, data_pracov=employees)
+        enforcer = Enforcer(vanguard.loader)
+        enforcer.write_data()
+        enforcer.write_data_lo()
+        logger.info('Done')
+    except Exception as e:
+        logger.error(f'Error: {e}')

@@ -13,10 +13,6 @@ def run_enforcer(request):
         wages_data = request.FILES.get('wages').read().decode('cp1250')
         employees_data = request.FILES.get('employees').read().decode('cp1250')
 
-        # Convert CSV data to pandas dataframes
-        #   wages_df = pd.read_csv(wages_data)
-        #   employees_df = pd.read_csv(employees_data)
-
         # Call run_enforcer function with dataframes as arguments
         result = enforcer.main(wages_data, employees_data)
 
