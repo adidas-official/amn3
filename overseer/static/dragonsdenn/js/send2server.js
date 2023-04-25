@@ -31,6 +31,7 @@ async function enforce(csrf_token) {
         });
         const data = await response.json();
         console.log(data);
+        $("#result-text").text(data['result']);
     } catch (error) {
         console.error(error);
     }

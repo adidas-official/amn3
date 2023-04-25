@@ -3,6 +3,7 @@ from pathlib import Path
 from itertools import chain
 from datetime import datetime
 from openpyxl.utils import get_column_letter
+import traceback, sys
 
 # Local imports
 from . import servant
@@ -10,7 +11,7 @@ from .vanguard import Assembler
 from .logger import logger, message as msg
 
 
-def write_to_list(idnum, items, row_num, worksheet, new=False) -> None:
+def write_to_list(idnum, items, row_num, worksheet, new=False) -> dict:
     """
     Args:
         idnum (str): The ID number of the servant.
@@ -66,6 +67,7 @@ def write_to_list(idnum, items, row_num, worksheet, new=False) -> None:
         data4message.setdefault(str(month), {'payout': payout_data["Payout"], "cell": get_column_letter(month_col_payout) + str(row_num)})
 
     logger.info(msg(items["Name"], 1, data4message, new))
+    return data4message
     # logger.info(message)
 
 
@@ -163,10 +165,14 @@ class Enforcer:
 
             last_lines[sheet_index] += 1
 
-    def write_data(self) -> None:
+    def write_data(self) -> list:
         """Write employees' data to the UP file, including filling new employees"""
+        return_msg = []
+        msg = f'Writing data to UP file'
 
-        logger.info('Writing data to UP file')
+        logger.info(msg)
+        return_msg.append(msg)
+
         outdir = Path(self.make_home_dir())
         wb = self.scout.wb_up
         ws = wb.worksheets[0]
@@ -177,24 +183,25 @@ class Enforcer:
         for person, data in self.merged_up.items():
             if person in self.data_up[0]:
                 ws = wb.worksheets[1]
-                write_to_list(person, data, self.data_up[0][person], ws)
+                return_msg.append(write_to_list(person, data, self.data_up[0][person], ws))
 
             elif person in self.data_up[1]:
                 ws = wb.worksheets[2]
-                write_to_list(person, data, self.data_up[1][person], ws)
+                return_msg.append(write_to_list(person, data, self.data_up[1][person], ws))
             else:
                 # logger.info(f'{person} {data["Name"]} is new')
                 if data['PensionType'] != '':
                     ws = wb.worksheets[1]
-                    write_to_list(person, data, self.last_row[0], ws, new=True)
+                    return_msg.append(write_to_list(person, data, self.last_row[0], ws, new=True))
                     self.last_row[0] += 1
                     # message += 'belongs to list2'
                 else:
                     ws = wb.worksheets[2]
-                    write_to_list(person, data, self.last_row[1], ws, new=True)
+                    return_msg.append(write_to_list(person, data, self.last_row[1], ws, new=True))
                     self.last_row[1] += 1
                     # message += 'belongs to list3'
         wb.save(outdir / 'temp-up.xlsx')
+        return return_msg
 
     def get_last_rows(self) -> list:
         last_rows = [self.scout.last_row_lo(i) for i in range(8)]
@@ -205,9 +212,18 @@ def main(wages, employees):
     # raise exceptions if something goes wrong
     # on exception, send error message
 
-    logger.info('Starting')
-    vanguard = Assembler(data_mzdy=wages, data_pracov=employees)
-    enforcer = Enforcer(vanguard.loader)
-    enforcer.write_data()
-    enforcer.write_data_lo()
-    logger.info('Done')
+    try:
+        logger.info('Starting')
+        return_msg = ['Starting']
+
+        vanguard = Assembler(data_mzdy=wages, data_pracov=employees)
+        enforcer = Enforcer(vanguard.loader)
+        logger.debug(enforcer.write_data())
+        logger.debug(enforcer.write_data_lo())
+
+        logger.info('Done')
+        return_msg.append('Done')
+        return return_msg
+    except Exception as e:
+        logger.error(traceback.print_exc(file=sys.stdout))
+        return 'Exception occurred. Check logs'
