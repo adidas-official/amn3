@@ -3,7 +3,7 @@
     <title>Home</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     {% load static %}
-    <script type="text/javascript" src="{% static 'dragonsdenn/js/send2server.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'dragonsdenn/css/style.css' %}">
 </head>
 <body>
     <h1>Automatizace Mzdových Nákladů</h1>
@@ -25,9 +25,18 @@
         </form>
     </div>
     <br>
-    <a href="">mzdy</a>
     <div id="result">
-        <span id="result-text">Working...</span>
+        <div id="result-header">
+            <span>Name</span>
+            <span>Sheet</span>
+            <span>Is New</span>
+            <span>Has Pension</span>
+            <span>Month</span>
+            <span>Wage</span>
+            <span>Cell</span>
+        </div>
     </div>
 </body>
+<script type="text/javascript" src="{% static 'dragonsdenn/js/send2server.js' %}"></script>
+<script type="text/javascript" src="{% static 'dragonsdenn/js/tables.js'%}"></script>
 </html>

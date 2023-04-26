@@ -39,3 +39,11 @@ def message(name, sheet_index, data={}, new=False, pension=True) -> str:
             message += f"KeyError: {err}"
     message += "_"*64
     return message
+
+def msgrow(name, sheet_index, data={}, new=False, pension=True) -> dict:
+    """Returns message in form of a list to display on front-end."""
+    row = {"name": name, "sheet": sheet_index, "new": new, "pension": pension, "months": []}
+    for month in data:
+        row["months"].append({"month": month, "payout": data[month]["payout"], "cell": data[month]["cell"]})
+    return row
+

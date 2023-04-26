@@ -1,0 +1,31 @@
+#result-header {
+    background: black;
+    color: white;
+}
+#result-header, .row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    border-bottom: 1px solid black;
+}
+.row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
+#result * {
+    flex-basis: 100%
+}
+ul {
+    margin: 0; padding: 0;
+}
+li {
+    list-style: none;
+}
+#result li:nth-child(n+2) {
+    display: none;
+}
+.row:hover {
+    background: #eee;
+    cursor: pointer;
+}

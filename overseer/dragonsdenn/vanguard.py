@@ -7,7 +7,7 @@ from io import StringIO
 
 # Local imports
 from . import servant, paths
-from .logger import logger
+from .courier import logger
 
 
 
