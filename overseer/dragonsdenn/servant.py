@@ -122,8 +122,11 @@ def get_sheet_by_emp_data(workplace, emp_status) -> int:
         'Dílna': 1,
         'Prode': 2,
         'ÚP So': 3,
-        'KÚ Ch': 4,
-        'KÚ': 5,
+        'ÚP Ch': 4,
+        'KÚ Ch': 5,
+        'KÚ': 6,
+        'Škola': 7,
+        'KÚ ÚP': 6,
         '': 0
     }
 
