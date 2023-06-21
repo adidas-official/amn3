@@ -18,29 +18,6 @@ import platform
 from . import paths
 import os
 
-# if on windows import win32com
-if platform.system() == 'Windows':
-    try:
-        import win32com as win32 # type: ignore
-    except ImportError:
-        print('win32com is not installed. Please install it to use this script.')
-        win32 = None
-        exit()
-else:
-    win32 = None
-
-mapping = [
-    {
-        0: 'J',
-        1: 'O',
-        2: 'T'
-    },
-    {
-        0: 'I',
-        1: 'J',
-        2: 'K'
-    }
-]
 
 column_map = [
     {
@@ -127,7 +104,7 @@ def get_sheet_by_emp_data(workplace, emp_status) -> int:
         'KÚ': 6,
         'Škola': 7,
         'KÚ ÚP': 6,
-        '': 0
+        '': 8
     }
 
     return workplaces[workplace]
@@ -314,14 +291,23 @@ def saveas_libreoffice(file):
 def saveas_excel(filename):
 
     try:
-        excel = win32.gencache.EnsureDispatch('Excel.Application')
+        import win32com.client as win32 # type: ignore
+        import pythoncom
+    except ImportError:
+        print('win32com is not installed. Please install it to use this script.')
+        win32 = None
+        exit()
+
+    try:
+        excel = win32.Dispatch('Excel.Application', pythoncom.CoInitialize())
         excel.Visible = False
 
         wb = excel.Workbooks.Open(Path(filename))
         wb.Close(True)
 
         excel.Application.Quit()
-    except:
+    except Exception as e:
+        print(e)
         print('There is no excel installed.')
 
 # update_f('odměna', [1, 2, 3, 4, 7, 8, 9, 11], 11)

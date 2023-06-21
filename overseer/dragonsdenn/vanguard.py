@@ -139,7 +139,7 @@ class Scout:
     def employee_list_lo(self):
         """ Returns list of people present on spreadsheet. Each sheet has its own dictionary with person:row kw pair"""
         people = []
-        for ws in self.wb_lo.worksheets[:-2]:
+        for ws in self.wb_lo.worksheets[:-3]:
             row = 3
             sheet_names = {}
             while True:
@@ -150,7 +150,7 @@ class Scout:
                 if name:
                     sheet_names[name] = row
                 row += 1
-
+            
             people.append(sheet_names)
 
         return people

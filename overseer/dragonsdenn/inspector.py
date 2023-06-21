@@ -86,7 +86,7 @@ class Inspector:
 
     @property
     def refund_lo(self):
-        ws = self.wb_lo.worksheets[-2]
+        ws = self.wb_lo.worksheets[-3]
 
         if self.q:
             ref_val = ws.cell(self.q + 2, column_index_from_string('R')).value
@@ -145,7 +145,7 @@ class Inspector:
     def load_df_loc(self):
         wb = openpyxl.load_workbook(self.file_lo, read_only=False, data_only=True)
         sheetnames = wb.worksheets[:-4]
-        table_indexes = [1, 2, 3, 4, 7, 8]
+        table_indexes = [i for i in range(1, 9)]
 
         sheet_dfs = []
 

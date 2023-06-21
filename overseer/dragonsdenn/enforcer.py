@@ -42,7 +42,8 @@ def write_to_list(idnum, items, row_num, worksheet, new=False) -> dict:
         month_col_payout = servant.column_map[num][m] + offset
         worksheet.cell(row_num, month_col_payout).value = payout_data["Payout"]
         if payout_data["Payout"] > 0:
-            worksheet.cell(row_num, month_col_payout + shift).value = f'=IF({get_column_letter(month_col_payout)}{row_num}<>"";14200-{get_column_letter(month_col_payout + 1)}{row_num};0)'
+            formula = f'=IF({get_column_letter(month_col_payout)}{row_num}<>"",14200-{get_column_letter(month_col_payout + 1)}{row_num},0)'
+            worksheet.cell(row_num, month_col_payout + shift).value = formula
 
         if num == 0:
             worksheet.cell(row_num, 6).value = items["EndEmployment"]
