@@ -4,6 +4,7 @@ import openpyxl
 import openpyxl.utils
 from pathlib import Path
 from io import StringIO
+import tempfile
 
 # Local imports
 from . import servant, paths
@@ -12,10 +13,12 @@ from .courier import logger
 
 
 class Assembler:
-    def __init__(self, data_mzdy, data_pracov):
+    def __init__(self, data_mzdy, data_pracov, loc_table, up_table):
         self.mzdy = StringIO(data_mzdy)
         self.pracov = StringIO(data_pracov)
         self.dataframe = self.prep_df
+        self.loc_table = loc_table
+        self.up_table = up_table
 
     @property
     def prep_df(self):
@@ -66,12 +69,16 @@ class Assembler:
                         servant.from_df_to_dict(self.dataframe, False, 'JmenoS'))
         logger.info('Data converted to dictionary.')
 
+        logger.info('Uploading spreadsheets to Enforcer.')
+        loc = servant.save_uploaded_file(self.loc_table, Path(paths.TABLES_PATH))
+        up = servant.save_uploaded_file(self.up_table, Path(paths.TABLES_PATH))
+
         # Creating list of all employees from scout
-        scout = Scout(Path(paths.TABLES_PATH) / 'jmenny_seznam_2022_09_27 Fiala.xlsx', Path(paths.TABLES_PATH) / 'Mzdové náklady 2023.xlsx')
+        scout = Scout(spreadsheet2=loc, spreadsheet1=up)
 
         employee_lists = (scout.employee_list_up(), scout.employee_list_lo())
 
-        return employee_lists, merged_lists, scout, servant.get_q(self.dataframe)
+        return employee_lists, merged_lists, scout, servant.get_q(self.dataframe), (loc, up)
 
 
 class Scout:
@@ -119,13 +126,24 @@ class Scout:
 
     def last_row_lo(self, sheet_number) -> int:
         """Returns number of last row with data in sheet."""
-        ws = self.wb_lo.worksheets[sheet_number]
+        if self.wb_lo:
+            ws = self.wb_lo.worksheets[sheet_number]
+        else:
+            return False
         row = 3
 
         while True:
             if not ws.cell(row, 2).value:
                 return row - 1
             row += 1
+
+    def get_last_rows(self) -> list:
+        if self.wb_lo:
+            l = len(self.wb_lo.worksheets) -2
+            logger.debug(f'Number of sheets: {l}')
+            last_rows = [self.last_row_lo(i) for i in range(l)]
+            return last_rows
+        return []
 
     @property
     def spread(self) -> list:
@@ -138,6 +156,9 @@ class Scout:
 
     def employee_list_lo(self):
         """ Returns list of people present on spreadsheet. Each sheet has its own dictionary with person:row kw pair"""
+        if not self.wb_lo:
+            logger.error('No workbook')
+            return []
         people = []
         for ws in self.wb_lo.worksheets[:-3]:
             row = 3
@@ -157,6 +178,11 @@ class Scout:
 
     def get_month(self, date, sheet_num):
         """ Gets month column index in local table from date in employee data object """
+
+        if not self.wb_lo:
+            logger.error('No workbook in get_month')
+            return None
+
         # Counter for keeping track of curent column index
         counter = 0
         # Number of how many times merged cell was found
@@ -174,10 +200,10 @@ class Scout:
             return None
 
         while True:
+            cell = self.wb_lo.worksheets[sheet_num].cell(row=1, column=counter + 3)
             if m == month_num:
                 return cell.column
 
-            cell = self.wb_lo.worksheets[sheet_num].cell(row=1, column=counter + 3)
             counter += 1
 
             if not type(cell).__name__ == 'MergedCell' and cell.value:

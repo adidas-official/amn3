@@ -54,7 +54,6 @@ function displayResult(result) {
         row += "</div>";
 
         $("#result").append(row);
-        // console.log(result[i].name);
     };
 };
 

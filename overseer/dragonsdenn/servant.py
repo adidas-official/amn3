@@ -15,7 +15,9 @@ from copy import copy
 from shutil import which
 from pathlib import Path
 import platform
+import tempfile
 from . import paths
+from .courier import logger
 import os
 
 
@@ -309,6 +311,21 @@ def saveas_excel(filename):
     except Exception as e:
         print(e)
         print('There is no excel installed.')
+
+# def save_uploaded_file(f):
+#     """ Saves uploaded file to temp directory """
+#     with tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx') as destination:
+#         for chunk in f.chunks():
+#             destination.write(chunk)
+#         return destination.name
+
+def save_uploaded_file(f, location):
+    """Saves uploaded file to a specified location with a specified file name"""
+    file_path = Path(location) / str(f)
+    with file_path.open('wb') as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
+    return str(file_path)
 
 # update_f('odměna', [1, 2, 3, 4, 7, 8, 9, 11], 11)
 # update_f('str.', [1, 2, 3], 12)

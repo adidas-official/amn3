@@ -13,8 +13,12 @@ def run_enforcer(request):
         wages_data = request.FILES.get('wages').read().decode('cp1250')
         employees_data = request.FILES.get('employees').read().decode('cp1250')
 
+        # get the tables
+        table_loc = request.FILES['table_loc']
+        table_up = request.FILES['table_up']
+        
         # Call run_enforcer function with dataframes as arguments
-        result = enforcer.main(wages_data, employees_data)
+        result = enforcer.main(wages_data, employees_data, table_loc, table_up)
 
         # Return result as JSON response
         response_data = {'result': result}

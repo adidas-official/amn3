@@ -71,13 +71,19 @@ def write_to_list(idnum, items, row_num, worksheet, new=False) -> dict:
 
 class Enforcer:
     def __init__(self, dataset):
+        # Data from CSV files
         self.data_up = dataset[0][0]
         self.data_lo = dataset[0][1]
         self.merged_up = dataset[1][0]
         self.merged_lo = dataset[1][1]
-        self.scout = dataset[-2]
+
+        self.scout = dataset[2]
         self.last_row = [row[1] + 1 for row in self.scout.range]
-        self.quarter = dataset[-1]
+        self.quarter = dataset[3]
+
+        # Temporary uploaded files for deletion after
+        self.temp_up = Path(dataset[-1][0])
+        self.temp_loc = Path(dataset[-1][1])
     
     def make_home_dir(self):
         home_dir = Path.home()
@@ -126,7 +132,7 @@ class Enforcer:
 
     def write_new_emps_lo(self, wb) -> None:
         """ Write new employees to the LO file"""
-        last_lines = self.get_last_rows()
+        last_lines = self.scout.get_last_rows()
 
         for emp in self.get_new_emps():
             sheet_index = servant.get_sheet_by_emp_data(emp['Code'], emp['Cat'])
@@ -196,11 +202,15 @@ class Enforcer:
         wb.save(outdir / 'temp-up.xlsx')
         return return_msg
 
-    def get_last_rows(self) -> list:
-        last_rows = [self.scout.last_row_lo(i) for i in range(8)]
-        return last_rows
+    # def get_last_rows(self) -> list:
+    #     last_rows = [self.scout.last_row_lo(i) for i in range(8)]
+    #     return last_rows
 
-def main(wages, employees):
+    def remove_temps(self):
+        self.temp_up.unlink()
+        self.temp_loc.unlink()
+
+def main(wages, employees, loc, up):
     # if all ok, send success message
     # raise exceptions if something goes wrong
     # on exception, send error message
@@ -209,10 +219,11 @@ def main(wages, employees):
         logger.info('Starting')
         return_msg = []
 
-        vanguard = Assembler(data_mzdy=wages, data_pracov=employees)
+        vanguard = Assembler(data_mzdy=wages, data_pracov=employees, loc_table=loc, up_table=up)
         enforcer = Enforcer(vanguard.loader)
         return_msg.append(enforcer.write_data())
         logger.debug(enforcer.write_data_lo())
+        enforcer.remove_temps()
 
         logger.info('Done')
         return return_msg
