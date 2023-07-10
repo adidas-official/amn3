@@ -4,7 +4,6 @@ import openpyxl
 import openpyxl.utils
 from pathlib import Path
 from io import StringIO
-import tempfile
 
 # Local imports
 from . import servant, paths
@@ -160,7 +159,7 @@ class Scout:
             logger.error('No workbook')
             return []
         people = []
-        for ws in self.wb_lo.worksheets[:-3]:
+        for ws in self.wb_lo.worksheets[:-2]:
             row = 3
             sheet_names = {}
             while True:
@@ -178,7 +177,6 @@ class Scout:
 
     def get_month(self, date, sheet_num):
         """ Gets month column index in local table from date in employee data object """
-        logger.debug("Get month:")
 
         if not self.wb_lo:
             logger.error('No workbook in get_month')
@@ -201,15 +199,12 @@ class Scout:
             return None
 
         while True:
-            logger.debug(f"Counter:{counter}, m:{m}")
             cell = self.wb_lo.worksheets[sheet_num].cell(row=1, column=counter)
-            logger.debug(f"Cell.col:{cell.column}, cell.type:{type(cell).__name__}")
 
             if type(cell).__name__ == 'Cell' and cell.value:
                 m += 1
 
             if m == month_num:
-                logger.debug(f"cell.column:{cell.column}")
                 return cell.column
 
             counter += 1

@@ -126,8 +126,11 @@ class Enforcer:
         wb.save(outdir / 'temp.xlsx')
 
     def get_new_emps(self) -> list:
+        logger.debug("get new emps:129")
         data_for_month = set(self.merged_lo.keys())
+        logger.debug(f"data_for_month:{data_for_month}")
         names_in_xlsx = set(chain.from_iterable(d.keys() for d in self.data_lo))
+        logger.debug(f"names_in_xlsx:{names_in_xlsx}")
         return [self.merged_lo[name[:20]] for name in data_for_month.difference(names_in_xlsx)]
 
     def write_new_emps_lo(self, wb) -> None:

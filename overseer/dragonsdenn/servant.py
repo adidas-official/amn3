@@ -90,9 +90,9 @@ def split_name(name):
 
 def get_sheet_by_emp_data(workplace, emp_status) -> int:
     if emp_status == 'DPP':
-        return 6
+        return 8
     elif emp_status == 'U':
-        return 7
+        return 9
 
     workplaces = {
         'Sklad': 0,
