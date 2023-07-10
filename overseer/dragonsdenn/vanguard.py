@@ -178,13 +178,14 @@ class Scout:
 
     def get_month(self, date, sheet_num):
         """ Gets month column index in local table from date in employee data object """
+        logger.debug("Get month:")
 
         if not self.wb_lo:
             logger.error('No workbook in get_month')
             return None
 
         # Counter for keeping track of curent column index
-        counter = 0
+        counter = 3
         # Number of how many times merged cell was found
         m = 0
         month_num = int(date.split('.')[0])
@@ -200,11 +201,15 @@ class Scout:
             return None
 
         while True:
-            cell = self.wb_lo.worksheets[sheet_num].cell(row=1, column=counter + 3)
+            logger.debug(f"Counter:{counter}, m:{m}")
+            cell = self.wb_lo.worksheets[sheet_num].cell(row=1, column=counter)
+            logger.debug(f"Cell.col:{cell.column}, cell.type:{type(cell).__name__}")
+
+            if type(cell).__name__ == 'Cell' and cell.value:
+                m += 1
+
             if m == month_num:
+                logger.debug(f"cell.column:{cell.column}")
                 return cell.column
 
             counter += 1
-
-            if not type(cell).__name__ == 'MergedCell' and cell.value:
-                m += 1

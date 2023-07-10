@@ -321,7 +321,13 @@ def saveas_excel(filename):
 
 def save_uploaded_file(f, location):
     """Saves uploaded file to a specified location with a specified file name"""
-    file_path = Path(location) / str(f)
+    dirpath = Path(location)
+
+    if not dirpath.exists():
+        dirpath.mkdir()
+
+    file_path = dirpath / str(f)
+
     with file_path.open('wb') as destination:
         for chunk in f.chunks():
             destination.write(chunk)
