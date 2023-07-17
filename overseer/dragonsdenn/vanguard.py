@@ -6,8 +6,8 @@ from pathlib import Path
 from io import StringIO
 
 # Local imports
-from . import servant, paths
-from .courier import logger
+from dragonsdenn import servant, paths
+from dragonsdenn.courier import logger
 
 
 
@@ -74,13 +74,17 @@ class Assembler:
 
         # Creating list of all employees from scout
         scout = Scout(spreadsheet2=loc, spreadsheet1=up)
+        cartographer = Cartographer(up, loc)
 
         employee_lists = (scout.employee_list_up(), scout.employee_list_lo())
 
-        return employee_lists, merged_lists, scout, servant.get_q(self.dataframe), (loc, up)
+        return employee_lists, merged_lists, scout, servant.get_q(self.dataframe), (loc, up), cartographer.lenght_of_months
 
 
 class Scout:
+    '''
+    Finds people in spreadsheets. Creates dictionary with data about people in sheets.
+    '''
     def __init__(self, spreadsheet1, spreadsheet2):
         self.wb_up = openpyxl.load_workbook(spreadsheet1)
         self.wb_lo = servant.unlock(spreadsheet2, '13881744')
@@ -208,3 +212,57 @@ class Scout:
                 return cell.column
 
             counter += 1
+
+
+class Cartographer(Scout):
+    # get xlsx files
+    def __init__(self, spreadsheet1, spreadsheet2):
+        super().__init__(spreadsheet1, spreadsheet2)
+        self.first_row = 3
+        self.first_column = 3
+
+    # get first/last row
+
+    # map months for each sheet
+    @property
+    def lenght_of_months(self) -> list:
+
+        # each item in list is number of columns, that are one month
+        cols_of_month = []
+
+        for sheet in self.wb_lo.sheetnames[:-2]:
+            ws = self.wb_lo[sheet]
+
+            # initial column
+            col_num = self.first_column
+            while True:
+                cell = ws.cell(row=1, column=col_num + 1)
+                
+                if type(cell).__name__ == 'Cell' and cell.value:
+                    col_len = cell.column - self.first_column
+                    cols_of_month.append(col_len)
+                    # logger.debug(f'Month number #3 starts at column: {col_len * 2 + self.first_column}')
+                    break
+                    
+                col_num += 1
+                
+        return cols_of_month
+
+    def __str__(self):
+        return "Hello, World!"
+
+
+def run_test():
+    logger.debug('Cartographer started')
+    loc = Path(paths.TABLES_PATH) / 'temp.xlsx'
+    up = Path(paths.TABLES_PATH) / 'temp-up.xlsx'
+
+    ctg = Cartographer(up, loc)
+
+    if not ctg:
+        logger.debug('Cartographer failed.')
+        return False
+
+    logger.debug(ctg.lenght_of_months)
+
+    return {'status':'Cartographer finished mapping.'}

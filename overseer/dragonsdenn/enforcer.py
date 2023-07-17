@@ -6,9 +6,23 @@ from openpyxl.utils import get_column_letter
 import traceback, sys
 
 # Local imports
-from . import servant
-from .vanguard import Assembler
-from .courier import logger, message as msg, msgrow
+from dragonsdenn import servant
+from dragonsdenn.vanguard import Assembler
+from dragonsdenn.courier import logger, message as msg, msgrow
+
+
+def get_month_col(date, i):
+    month = date.split('.')[0]
+    try:
+        month = int(month) - 1
+
+    except ValueError:
+        logger.error("Get_month:date-Not integer")
+        return False
+    
+    month_col = month * i + 3
+
+    return month_col
 
 
 def write_to_list(idnum, items, row_num, worksheet, new=False) -> dict:
@@ -82,8 +96,10 @@ class Enforcer:
         self.quarter = dataset[3]
 
         # Temporary uploaded files for deletion after
-        self.temp_up = Path(dataset[-1][0])
-        self.temp_loc = Path(dataset[-1][1])
+        self.temp_up = Path(dataset[-2][0])
+        self.temp_loc = Path(dataset[-2][1])
+
+        self.length_of_months = dataset[-1]
     
     def make_home_dir(self):
         home_dir = Path.home()
@@ -111,7 +127,9 @@ class Enforcer:
                     message = f'Sheet: {i}, Line: {sheet_data[person]}, Person: {person}, {data["Code"]}, {data["Cat"]}'
                     ws = wb.worksheets[i]
                     for date, money in data['Date'].items():
-                        col = self.scout.get_month(date, i)
+                        # logger.debug(date)
+                        # col = self.scout.get_month(date, i)
+                        col = get_month_col(date, self.length_of_months[i])
                         fare_col = col + fare_shift
                         col_letter = get_column_letter(col)
                         fare_letter = get_column_letter(fare_col)

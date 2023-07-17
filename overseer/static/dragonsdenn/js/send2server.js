@@ -12,6 +12,12 @@ $(document).ready(function() {
         var csrftoken = $('[name=csrfmiddlewaretoken]').val();
         inspect(csrftoken);
     });
+
+    $("#run-vanguard").click(function(e) {
+        e.preventDefault();
+        var csrftoken = $('[name=csrfmiddlewaretoken]').val();
+        vanguard(csrftoken);
+    })
     
 });
 
@@ -91,5 +97,22 @@ async function inspect(csrf_token) {
         console.log('Inspection requested!');
     } catch (error) {
         console.log('Inspection failed!');
+    }
+}
+
+
+async function vanguard(csrf_token) {
+    try {
+        console.log('Requesting Vanguard');
+        const response = await fetch('/run-vanguard/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrf_token
+            }
+        });
+        const data = await response.json();
+        console.log(data)
+    } catch (error) {
+        console.log('Vanguard failed!');
     }
 }

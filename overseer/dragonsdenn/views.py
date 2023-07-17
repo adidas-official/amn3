@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from . import enforcer, inspector
+from dragonsdenn import enforcer, inspector
+from dragonsdenn import vanguard
 
 def index(request):
     return render(request, 'dragonsdenn/home.html', {'title': 'Home'})
@@ -26,6 +27,11 @@ def run_enforcer(request):
     else:
         response_data = {"status": "error", "message": "Invalid request method"}
         return JsonResponse(response_data, status=405)
+
+def run_vanguard(request):
+    if request.method == 'POST':
+        response_data = vanguard.run_test()
+        return JsonResponse(response_data)
 
 
 def run_inspector(request):
